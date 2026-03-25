@@ -1,2 +1,12 @@
+[project]
+name = "onlypanthers"
+version = "0.1.0"
+dependencies = [
+  "fastapi",
+  "aiosqlite",
+  "uvicorn[standard]",
+  "pydantic"
+]
+
 [project.scripts]
 app = "app:app"
