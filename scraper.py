@@ -7,6 +7,7 @@ Session cookies are obtained automatically (no student login required).
 import asyncio
 import base64
 import logging
+import os
 import re
 import time
 from typing import Any, Optional
@@ -36,13 +37,11 @@ TERM_PRIORITIES = ["202608", "202605", "202601"]
 
 # ── SQLite cache helpers ──────────────────────────────────────────────────────
 
-DB_PATH = "onlypanther.db"
+DB_PATH = os.getenv("ONLYPANTHER_DB_PATH", "onlypanther.db")
 
 
 async def init_db():
-    import os
-import tempfile
-DB_PATH = os.path.join(tempfile.gettempdir(), 'onlypanthers.db')
+    async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
             """
             CREATE TABLE IF NOT EXISTS classes (
@@ -251,6 +250,14 @@ class BannerSession:
 
 # Module-level Banner session (reused across calls)
 _banner_session = BannerSession()
+
+
+async def close_banner_session():
+    """Close the shared Banner session on application shutdown."""
+    try:
+        await _banner_session.close()
+    except Exception as exc:
+        logger.warning("Failed to close Banner session cleanly: %s", exc)
 
 
 # ── Term discovery ─────────────────────────────────────────────────────────────

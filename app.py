@@ -15,7 +15,7 @@ import asyncio
 import logging
 import os
 import time
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 from typing import Optional
 
@@ -26,6 +26,7 @@ from pydantic import BaseModel
 
 from scraper import (
     batch_fetch_rmp,
+    close_banner_session,
     fetch_rmp_rating,
     fetch_subjects,
     fetch_terms,
@@ -43,32 +44,50 @@ logger = logging.getLogger(__name__)
 _scrape_lock = asyncio.Lock()
 _scrape_in_progress = False
 _last_scrape: float = 0.0
+_startup_scrape_task: Optional[asyncio.Task] = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-   (await init_db())
-    # Kick off a background scrape on startup (non-blocking)
-    @asynccontextmanager
-async def lifespan(app: FastAPI):
+    global _startup_scrape_task
     await init_db()
-    asyncio.create_task(_background_scrape())
-    yield
+    # Kick off a background scrape on startup (non-blocking)
+    _startup_scrape_task = asyncio.create_task(_background_scrape())
+    try:
+        yield
+    finally:
+        if _startup_scrape_task:
+            if not _startup_scrape_task.done():
+                _startup_scrape_task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await _startup_scrape_task
+            elif not _startup_scrape_task.cancelled():
+                exc = _startup_scrape_task.exception()
+                if exc:
+                    logger.error(
+                        "Startup scrape task failed: %s",
+                        exc,
+                        exc_info=(type(exc), exc, exc.__traceback__),
+                    )
+        await close_banner_session()
 
 
-async def _background_scrape():
+async def _background_scrape(term: Optional[str] = None):
     global _scrape_in_progress, _last_scrape
     async with _scrape_lock:
         if _scrape_in_progress:
             return
         _scrape_in_progress = True
     try:
-        logger.info("Starting background Banner scrape …")
-        await scrape_all_classes()
+        logger.info("Starting background Banner scrape (term=%s) ...", term or "auto")
+        await scrape_all_classes(term=term)
         _last_scrape = time.time()
         logger.info("Background scrape complete.")
+    except asyncio.CancelledError:
+        logger.info("Background scrape task cancelled.")
+        raise
     except Exception as exc:
-        logger.error("Background scrape error: %s", exc)
+        logger.exception("Background scrape error: %s", exc)
     finally:
         async with _scrape_lock:
             _scrape_in_progress = False
@@ -294,10 +313,9 @@ async def trigger_scrape(
     term: Optional[str] = None,
     force: bool = False,
 ):
-    global _scrape_in_progress
     if _scrape_in_progress and not force:
         return {"status": "already_running"}
-    background_tasks.add_task(_background_scrape)
+    background_tasks.add_task(_background_scrape, term)
     return {"status": "started", "term": term}
 
 
