@@ -1,889 +1,520 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>OnlyPanther 🐾 GSU Class Quest</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OnlyPanther | GSU Course Explorer</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      colors: {
-        np: {
-          bg:      '#0A0814',
-          card:    '#12102A',
-          border:  '#2A2550',
-          blue:    '#00C6FF',
-          purple:  '#8B5CF6',
-          green:   '#00FF87',
-          orange:  '#FF6B35',
-          yellow:  '#FFD700',
-          pink:    '#FF2D7A',
-          rare:    '#3B82F6',
-          epic:    '#B44FEF',
-          legend:  '#FFD700',
-          uncommon:'#22C55E',
-          common:  '#94A3B8',
-        }
-      },
-      fontFamily: {
-        game: ['"Press Start 2P"', 'monospace'],
-        ui: ['"Inter"', 'sans-serif'],
-      },
-      animation: {
-        'float': 'float 3s ease-in-out infinite',
-        'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
-        'shimmer': 'shimmer 2s linear infinite',
-        'slide-in': 'slideIn 0.4s ease-out',
-        'bounce-in': 'bounceIn 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97)',
-        'spin-slow': 'spin 4s linear infinite',
-        'particle': 'particle 4s ease-in-out infinite',
-      },
-    }
-  }
-}
-</script>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet"/>
+<script>window.__BOOTSTRAP_DATA__ = null;</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --bg: #0A0814;
-    --card: #12102A;
-    --border: #2A2550;
-    --blue: #00C6FF;
-    --purple: #8B5CF6;
-    --green: #00FF87;
-    --orange: #FF6B35;
-    --yellow: #FFD700;
-    --pink: #FF2D7A;
+    --bg: #0f141b;
+    --surface: #171e28;
+    --surface-2: #1e2733;
+    --border: #2c3645;
+    --text: #e8edf4;
+    --muted: #97a7ba;
+    --accent: #7f9cc0;
+    --danger: #ad7082;
+    --success: #7f9a86;
   }
 
   * { box-sizing: border-box; }
-
   html, body {
-    margin: 0; padding: 0;
+    margin: 0;
+    padding: 0;
     background: var(--bg);
-    color: #E2D9FF;
-    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    font-family: Inter, sans-serif;
     min-height: 100vh;
-    overflow-x: hidden;
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  #app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
   }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 3px; }
-
-  /* Particle canvas */
-  #particle-canvas {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: 0; opacity: 0.35;
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
   }
-
-  /* Keyframes */
-  @keyframes float {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+  .subtle {
+    color: var(--muted);
   }
-  @keyframes pulseGlow {
-    0%,100% { box-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
-    50% { box-shadow: 0 0 20px currentColor, 0 0 40px currentColor, 0 0 60px currentColor; }
+  .nav-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .nav-tab {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .nav-tab.active {
+    color: var(--text);
+    border-color: #486382;
+    background: #243244;
+  }
+  .btn {
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #202a36;
+    color: var(--text);
+    padding: 8px 12px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .btn.primary {
+    border-color: #557295;
+    background: #334a63;
+  }
+  .input {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #1a2330;
+    color: var(--text);
+    padding: 9px 11px;
+    font-size: 13px;
+  }
+  .input:focus {
+    outline: none;
+    border-color: #557295;
+  }
+  .chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    border: 1px solid var(--border);
+    background: #1d2733;
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .chip.active {
+    color: var(--text);
+    border-color: #557295;
+  }
+  .class-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 14px;
+  }
+  .class-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    cursor: pointer;
+  }
+  .prof-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .prof-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .skeleton {
+    height: 180px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #1b2531 25%, #263244 50%, #1b2531 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s linear infinite;
   }
   @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
   }
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes bounceIn {
-    0% { transform: scale(0.3); opacity: 0; }
-    50% { transform: scale(1.05); }
-    70% { transform: scale(0.9); }
-    100% { transform: scale(1); opacity: 1; }
-  }
-  @keyframes xpPop {
-    0% { opacity: 1; transform: translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateY(-60px) scale(1.5); }
-  }
-  @keyframes rarityPulse {
-    0%,100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-
-  .animate-float { animation: float 3s ease-in-out infinite; }
-  .animate-pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
-  .animate-slide-in { animation: slideIn 0.4s ease-out both; }
-  .animate-bounce-in { animation: bounceIn 0.5s both; }
-
-  /* Shimmer loading skeleton */
-  .skeleton {
-    background: linear-gradient(90deg, var(--card) 25%, #1E1B3A 50%, var(--card) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s linear infinite;
-    border-radius: 8px;
-  }
-
-  /* Rarity shimmer on cards */
-  .rarity-LEGENDARY { border: 2px solid var(--yellow); box-shadow: 0 0 20px #FFD70088; }
-  .rarity-EPIC      { border: 2px solid #B44FEF; box-shadow: 0 0 15px #B44FEF66; }
-  .rarity-RARE      { border: 2px solid var(--blue); box-shadow: 0 0 12px #00C6FF44; }
-  .rarity-UNCOMMON  { border: 2px solid var(--green); }
-  .rarity-COMMON    { border: 1px solid var(--border); }
-  .rarity-UNKNOWN   { border: 1px solid #64748B; }
-
-  /* Navigation */
-  .nav-tab {
-    padding: 10px 20px; border-radius: 8px;
-    font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: all 0.2s;
-    color: #A89FCC; border: 1px solid transparent;
-    white-space: nowrap;
-  }
-  .nav-tab:hover, .nav-tab.active {
-    background: linear-gradient(135deg, var(--purple), var(--blue));
-    color: #fff;
-    border-color: var(--blue);
-    text-shadow: 0 0 8px #fff;
-  }
-
-  /* XP Bar */
-  .xp-bar {
-    background: var(--border);
-    border-radius: 999px; overflow: hidden; height: 10px;
-  }
-  .xp-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--purple), var(--blue), var(--green));
-    border-radius: 999px;
-    transition: width 1s ease;
-    box-shadow: 0 0 8px var(--blue);
-  }
-
-  /* Class card */
-  .class-card {
-    background: var(--card);
-    border-radius: 16px;
-    padding: 18px;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    animation: slideIn 0.3s ease-out both;
-    position: relative;
-    overflow: hidden;
-  }
-  .class-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--purple), var(--blue), var(--green));
-  }
-  .class-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(139,92,246,0.3);
-  }
-
-  /* Prof card (Pokémon style) */
-  .prof-card {
-    background: var(--card);
-    border-radius: 20px;
-    padding: 20px;
-    text-align: center;
-    transition: transform 0.3s;
-    position: relative;
-    overflow: hidden;
-  }
-  .prof-card:hover { transform: scale(1.05) rotateY(5deg); }
-  .prof-avatar {
-    width: 72px; height: 72px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 32px; margin: 0 auto 12px;
-    border: 3px solid;
-    animation: float 3s ease-in-out infinite;
-  }
-
-  /* Quest card */
-  .quest-card {
-    background: linear-gradient(135deg, #1A1535, #0F0C28);
-    border-radius: 16px; padding: 20px;
-    border: 1px solid var(--border);
-    transition: all 0.2s;
-    cursor: pointer;
-  }
-  .quest-card:hover {
-    border-color: var(--orange);
-    box-shadow: 0 0 20px #FF6B3522;
-  }
-
-  /* Buttons */
-  .btn-primary {
-    background: linear-gradient(135deg, var(--purple), var(--blue));
-    color: #fff; border: none; border-radius: 10px;
-    padding: 10px 22px; font-weight: 700; cursor: pointer;
-    transition: all 0.2s; font-size: 14px;
-  }
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139,92,246,0.5);
-  }
-  .btn-secondary {
-    background: transparent;
-    border: 1px solid var(--purple);
-    color: var(--purple); border-radius: 10px;
-    padding: 8px 18px; font-weight: 600; cursor: pointer;
-    transition: all 0.2s; font-size: 13px;
-  }
-  .btn-secondary:hover { background: var(--purple); color: #fff; }
-
-  /* Input */
-  .gsu-input {
-    background: #0F0C28;
-    border: 1px solid var(--border);
-    color: #E2D9FF;
-    border-radius: 10px;
-    padding: 10px 16px;
-    font-size: 14px;
-    transition: border-color 0.2s;
-    width: 100%;
-  }
-  .gsu-input:focus {
-    outline: none;
-    border-color: var(--purple);
-    box-shadow: 0 0 12px rgba(139,92,246,0.3);
-  }
-
-  /* Streak counter */
-  .streak-fire {
-    font-size: 28px;
-    animation: float 1.5s ease-in-out infinite;
-    filter: drop-shadow(0 0 8px #FF6B35);
-  }
-
-  /* Badge */
-  .badge-chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: linear-gradient(135deg, #1E1B40, #2A2550);
-    border: 1px solid var(--purple);
-    border-radius: 999px;
-    padding: 4px 14px; font-size: 12px; font-weight: 600;
-    color: var(--purple);
-  }
-  .badge-chip.earned {
-    background: linear-gradient(135deg, #1A1040, #3B1D7A);
-    border-color: var(--yellow);
-    color: var(--yellow);
-    box-shadow: 0 0 10px #FFD70033;
-  }
-
-  /* XP float pop */
-  .xp-pop {
-    position: fixed;
-    font-weight: 900; font-size: 22px;
-    color: var(--green);
-    text-shadow: 0 0 10px var(--green);
-    pointer-events: none;
-    animation: xpPop 1s ease-out forwards;
-    z-index: 9999;
-  }
-
-  /* Schedule grid */
-  .schedule-slot {
-    background: linear-gradient(135deg, var(--purple)22, var(--blue)11);
-    border: 1px solid var(--purple);
-    border-radius: 10px; padding: 8px 12px;
-    font-size: 12px; cursor: pointer;
-    transition: all 0.2s;
-  }
-  .schedule-slot:hover {
-    background: linear-gradient(135deg, var(--purple)44, var(--blue)22);
-  }
-
-  /* Filter chips */
-  .filter-chip {
-    padding: 5px 14px; border-radius: 999px;
-    font-size: 12px; font-weight: 700;
-    cursor: pointer; border: 1px solid;
-    transition: all 0.15s;
-  }
-
-  /* Toast notification */
   #toast-container {
-    position: fixed; top: 80px; right: 20px;
-    z-index: 10000; display: flex;
-    flex-direction: column; gap: 8px;
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
   .toast {
-    background: #1E1B40;
-    border-radius: 12px; padding: 14px 20px;
-    border-left: 4px solid var(--green);
-    font-size: 14px; font-weight: 600;
-    animation: slideIn 0.3s ease-out;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    background: #1e2733;
+    border: 1px solid var(--border);
+    color: #d8e2ee;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
     max-width: 320px;
   }
-  .toast.error { border-left-color: var(--pink); }
-  .toast.info { border-left-color: var(--blue); }
-
-  /* Mobile responsive */
-  @media (max-width: 640px) {
-    .class-card { padding: 14px; }
-    .prof-card { padding: 14px; }
-    .nav-tab { padding: 8px 14px; font-size: 11px; }
+  .toast.error { border-color: #845968; color: #f0c6d0; }
+  .hero {
+    padding: 18px;
+    margin-bottom: 16px;
   }
-
-  /* Loading spinner */
-  .spinner {
-    width: 40px; height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--purple);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto;
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .page { display: none; }
-  .page.active { display: block; }
-
-  /* Holographic effect on legendary cards */
-  .holo {
-    background: linear-gradient(
-      135deg,
-      rgba(255,215,0,0.08) 0%,
-      rgba(180,79,239,0.12) 25%,
-      rgba(0,198,255,0.12) 50%,
-      rgba(0,255,135,0.08) 75%,
-      rgba(255,215,0,0.08) 100%
-    );
-    background-size: 200% 200%;
-    animation: shimmer 3s linear infinite;
+  .stat {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
   }
+  .stat .label { color: var(--muted); font-size: 11px; }
+  .stat .value { font-size: 20px; font-weight: 700; color: #d7e3ef; }
+  .filters {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: center;
+  }
+  #class-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.66);
+    z-index: 2000;
+    padding: 20px;
+    overflow: auto;
+  }
+  #class-modal .inner {
+    max-width: 620px;
+    margin: 20px auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .small { font-size: 12px; }
+  .muted { color: var(--muted); }
 </style>
 </head>
 <body>
-
-<!-- Particle canvas background -->
-<canvas id="particle-canvas"></canvas>
-
-<!-- Toast notifications -->
 <div id="toast-container"></div>
 
-<!-- XP pop container -->
-<div id="xp-pops"></div>
-
-<!-- ═══════════════════════════════════════════════════════════ HEADER -->
-<header style="position:sticky;top:0;z-index:100;background:rgba(10,8,20,0.9);backdrop-filter:blur(12px);border-bottom:1px solid #2A2550;">
-  <div style="max-width:1400px;margin:0 auto;padding:0 16px;">
-    <div style="display:flex;align-items:center;gap:12px;padding:12px 0;">
-
-      <!-- Logo -->
-      <div style="display:flex;align-items:center;gap:10px;min-width:fit-content;">
-        <div style="font-size:28px;animation:float 3s ease-in-out infinite;">🐾</div>
-        <div>
-          <div style="font-family:'Press Start 2P',monospace;font-size:14px;background:linear-gradient(90deg,#8B5CF6,#00C6FF,#00FF87);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2;">
-            ONLY<br>PANTHER
-          </div>
-        </div>
+<header class="panel" style="position: sticky; top: 0; z-index: 100; margin: 0 auto; border-radius: 0;">
+  <div id="app" style="padding-top: 12px; padding-bottom: 12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:20px;font-weight:700;letter-spacing:-0.01em;">OnlyPanther</div>
+        <div class="small subtle">Live GSU schedule explorer</div>
       </div>
-
-      <!-- Nav tabs (scrollable on mobile) -->
-      <nav style="display:flex;gap:6px;overflow-x:auto;flex:1;padding:0 8px;scrollbar-width:none;">
-        <button class="nav-tab active" onclick="showPage('explore')" id="tab-explore">🔭 Explore</button>
-        <button class="nav-tab" onclick="showPage('quests')" id="tab-quests">⚔️ Quests</button>
-        <button class="nav-tab" onclick="showPage('professors')" id="tab-professors">🃏 Profs</button>
-        <button class="nav-tab" onclick="showPage('schedule')" id="tab-schedule">📅 Schedule</button>
-        <button class="nav-tab" onclick="showPage('leaderboard')" id="tab-leaderboard">🏆 Board</button>
-      </nav>
-
-      <!-- Player stats (top right) -->
-      <div style="display:flex;align-items:center;gap:12px;min-width:fit-content;" id="player-hud">
-        <div style="text-align:right;">
-          <div style="font-size:12px;color:#A89FCC;">Level <span id="hud-level" style="color:#FFD700;font-weight:900;">1</span></div>
-          <div style="width:80px;" class="xp-bar"><div class="xp-fill" id="hud-xpbar" style="width:0%"></div></div>
-        </div>
-        <div style="text-align:center;">
-          <div class="streak-fire" id="hud-streak-icon">🔥</div>
-          <div style="font-size:11px;color:#FF6B35;font-weight:800;" id="hud-streak">0</div>
-        </div>
-        <div style="background:#1E1B40;border:1px solid #8B5CF6;border-radius:10px;padding:6px 12px;font-size:13px;font-weight:900;color:#FFD700;">
-          ⚡ <span id="hud-xp">0</span> XP
-        </div>
-      </div>
-
+      <div class="small subtle">Term: <span id="hero-term-label">—</span></div>
     </div>
-
-    <!-- Scraping status bar -->
-    <div id="scrape-banner" style="display:none;background:linear-gradient(90deg,#1A1040,#0F1A40);padding:6px 0;font-size:12px;text-align:center;color:#00C6FF;border-top:1px solid #2A2550;">
-      <span style="animation:float 1s ease-in-out infinite;display:inline-block;">⚡</span>
-      Scanning GSU Banner for live class data… This takes ~2 min on first load.
-      <div style="width:200px;height:4px;background:#2A2550;border-radius:999px;display:inline-block;margin-left:10px;vertical-align:middle;overflow:hidden;">
-        <div style="height:100%;background:linear-gradient(90deg,#8B5CF6,#00C6FF);background-size:200%;animation:shimmer 1.5s linear infinite;border-radius:999px;width:100%;"></div>
-      </div>
+    <div class="nav-row" style="margin-top:10px;">
+      <button class="nav-tab active" id="tab-explore" onclick="showPage('explore')">Classes</button>
+      <button class="nav-tab" id="tab-professors" onclick="showPage('professors')">Professors</button>
+      <button class="nav-tab" id="tab-schedule" onclick="showPage('schedule')">Schedule</button>
+      <button class="nav-tab" id="tab-quests" onclick="showPage('quests')">Progress</button>
+      <button class="nav-tab" id="tab-leaderboard" onclick="showPage('leaderboard')">Leaderboard</button>
     </div>
   </div>
 </header>
 
-<!-- ═══════════════════════════════════════════════════════════ MAIN -->
-<main style="max-width:1400px;margin:0 auto;padding:24px 16px;position:relative;z-index:1;">
-
-<!-- ─────────────────────────── PAGE: EXPLORE ─────────────────────────── -->
-<div class="page active" id="page-explore">
-
-  <!-- Hero banner -->
-  <div style="background:linear-gradient(135deg,#1A1040,#0A1A3A);border-radius:24px;padding:32px;margin-bottom:28px;border:1px solid #2A2550;overflow:hidden;position:relative;">
-    <div style="position:absolute;top:-20px;right:-20px;font-size:120px;opacity:0.07;animation:spin 20s linear infinite;">🐾</div>
-    <div style="position:relative;z-index:1;">
-      <h1 style="font-family:'Press Start 2P',monospace;font-size:clamp(14px,3vw,24px);background:linear-gradient(90deg,#8B5CF6,#00C6FF,#00FF87,#FF6B35);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0 0 12px;">
-        CHOOSE YOUR CLASSES<br>LIKE A QUEST
-      </h1>
-      <p style="color:#A89FCC;margin:0 0 20px;font-size:14px;max-width:500px;">
-        Live data from GSU Banner · RateMyProfessors ratings · Gamified XP rewards.
-        Find your perfect schedule for <span id="hero-term-label" style="color:#00C6FF;font-weight:700;">Fall 2026</span>.
-      </p>
-
-      <!-- Quick stats row -->
-      <div style="display:flex;gap:12px;flex-wrap:wrap;" id="quick-stats">
-        <div style="background:rgba(139,92,246,0.15);border:1px solid #8B5CF6;border-radius:12px;padding:10px 18px;">
-          <div style="font-size:22px;font-weight:900;color:#8B5CF6;" id="stat-total">—</div>
-          <div style="font-size:11px;color:#A89FCC;">Total Sections</div>
-        </div>
-        <div style="background:rgba(0,198,255,0.1);border:1px solid #00C6FF;border-radius:12px;padding:10px 18px;">
-          <div style="font-size:22px;font-weight:900;color:#00C6FF;" id="stat-open">—</div>
-          <div style="font-size:11px;color:#A89FCC;">Open Seats</div>
-        </div>
-        <div style="background:rgba(255,215,0,0.1);border:1px solid #FFD700;border-radius:12px;padding:10px 18px;">
-          <div style="font-size:22px;font-weight:900;color:#FFD700;" id="stat-legendary">—</div>
-          <div style="font-size:11px;color:#A89FCC;">Legendary Classes</div>
-        </div>
-        <div style="background:rgba(0,255,135,0.1);border:1px solid #00FF87;border-radius:12px;padding:10px 18px;">
-          <div style="font-size:22px;font-weight:900;color:#00FF87;" id="stat-subjects">—</div>
-          <div style="font-size:11px;color:#A89FCC;">Subjects</div>
-        </div>
-      </div>
-    </div>
+<main id="app">
+  <div id="scrape-banner" class="panel small muted" style="display:none;padding:10px 12px;margin-bottom:12px;">
+    Refreshing class cache in background…
   </div>
 
-  <!-- Search & filters -->
-  <div style="background:#12102A;border-radius:16px;padding:20px;margin-bottom:20px;border:1px solid #2A2550;">
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
-      <div style="flex:1;min-width:200px;">
-        <input class="gsu-input" type="text" id="search-input" placeholder="🔍  Search classes, CRNs, professors…" oninput="debounceSearch()"/>
-      </div>
-      <select class="gsu-input" id="term-select" style="max-width:200px;" onchange="onTermChange()">
-        <option value="">Loading terms…</option>
-      </select>
-      <select class="gsu-input" id="subject-select" style="max-width:160px;" onchange="loadClasses(true)">
-        <option value="">All Subjects</option>
-      </select>
-      <button class="btn-primary" onclick="loadClasses(true)">⚡ Search</button>
+  <section class="page active" id="page-explore">
+    <div class="panel hero">
+      <h1 style="margin:0 0 8px;font-size:26px;font-weight:700;letter-spacing:-0.02em;">Build your schedule with current data</h1>
+      <p class="subtle" style="margin:0;">Live classes and instructor ratings are preloaded on first paint, then refreshed in the background.</p>
     </div>
 
-    <!-- Rarity & open-only filters -->
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-      <span style="font-size:12px;color:#A89FCC;margin-right:4px;">Rarity:</span>
-      <button class="filter-chip" id="chip-all" style="border-color:#8B5CF6;color:#8B5CF6;background:rgba(139,92,246,0.2);" onclick="setRarityFilter('')">All</button>
-      <button class="filter-chip" id="chip-LEGENDARY" style="border-color:#FFD700;color:#FFD700;" onclick="setRarityFilter('LEGENDARY')">👑 Legendary</button>
-      <button class="filter-chip" id="chip-EPIC" style="border-color:#B44FEF;color:#B44FEF;" onclick="setRarityFilter('EPIC')">💜 Epic</button>
-      <button class="filter-chip" id="chip-RARE" style="border-color:#3B82F6;color:#3B82F6;" onclick="setRarityFilter('RARE')">💙 Rare</button>
-      <button class="filter-chip" id="chip-UNCOMMON" style="border-color:#22C55E;color:#22C55E;" onclick="setRarityFilter('UNCOMMON')">💚 Uncommon</button>
-      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-        <label style="font-size:13px;color:#A89FCC;cursor:pointer;display:flex;align-items:center;gap:6px;">
-          <input type="checkbox" id="open-only" onchange="loadClasses(true)" style="accent-color:#8B5CF6;"/>
+    <div class="stats" style="margin-bottom:12px;">
+      <div class="stat"><div class="label">Sections</div><div class="value" id="stat-total">—</div></div>
+      <div class="stat"><div class="label">Open seats</div><div class="value" id="stat-open">—</div></div>
+      <div class="stat"><div class="label">Top rarity</div><div class="value" id="stat-legendary">—</div></div>
+      <div class="stat"><div class="label">Subjects</div><div class="value" id="stat-subjects">—</div></div>
+    </div>
+
+    <div class="panel" style="padding:12px;margin-bottom:12px;">
+      <div class="filters" style="margin-bottom:10px;">
+        <input id="search-input" class="input" placeholder="Search classes, CRN, professor" oninput="debounceSearch()" />
+        <select id="term-select" class="input" onchange="onTermChange()"><option>Loading terms…</option></select>
+        <select id="subject-select" class="input" onchange="loadClasses(true)"><option value="">All subjects</option></select>
+        <button class="btn primary" onclick="loadClasses(true)">Search</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <div class="chips">
+          <button class="chip active" id="chip-all" onclick="setRarityFilter('')">All</button>
+          <button class="chip" id="chip-LEGENDARY" onclick="setRarityFilter('LEGENDARY')">Legendary</button>
+          <button class="chip" id="chip-EPIC" onclick="setRarityFilter('EPIC')">Epic</button>
+          <button class="chip" id="chip-RARE" onclick="setRarityFilter('RARE')">Rare</button>
+          <button class="chip" id="chip-UNCOMMON" onclick="setRarityFilter('UNCOMMON')">Uncommon</button>
+        </div>
+        <label class="small muted" style="display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="open-only" onchange="loadClasses(true)" />
           Open seats only
         </label>
       </div>
     </div>
-  </div>
 
-  <!-- Class grid -->
-  <div id="class-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;"></div>
-
-  <!-- Pagination -->
-  <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-top:24px;" id="pagination">
-    <button class="btn-secondary" id="prev-btn" onclick="changePage(-1)">← Prev</button>
-    <span style="color:#A89FCC;font-size:14px;" id="page-label">Page 1</span>
-    <button class="btn-secondary" id="next-btn" onclick="changePage(1)">Next →</button>
-  </div>
-
-</div><!-- /page-explore -->
-
-
-<!-- ─────────────────────────── PAGE: QUESTS ─────────────────────────── -->
-<div class="page" id="page-quests">
-
-  <div style="margin-bottom:28px;">
-    <h2 style="font-family:'Press Start 2P',monospace;font-size:16px;color:#FF6B35;margin:0 0 6px;">⚔️ ACTIVE QUESTS</h2>
-    <p style="color:#A89FCC;font-size:13px;margin:0;">Complete quests to earn XP, badges and unlock new powers.</p>
-  </div>
-
-  <!-- Daily challenges -->
-  <div style="margin-bottom:32px;">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-      <h3 style="color:#FFD700;font-family:'Press Start 2P',monospace;font-size:12px;margin:0;">🌅 DAILY CHALLENGES</h3>
-      <div style="background:#1E1B40;border:1px solid #FFD70055;border-radius:999px;padding:3px 12px;font-size:11px;color:#FFD700;" id="daily-timer">Resets in: —</div>
+    <div id="class-grid" class="class-grid"></div>
+    <div id="pagination" style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:14px;">
+      <button id="prev-btn" class="btn" onclick="changePage(-1)">Prev</button>
+      <span id="page-label" class="small muted">Page 1</span>
+      <button id="next-btn" class="btn" onclick="changePage(1)">Next</button>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;" id="daily-challenges-grid">
-      <div class="skeleton" style="height:120px;"></div>
-      <div class="skeleton" style="height:120px;"></div>
-      <div class="skeleton" style="height:120px;"></div>
-    </div>
-  </div>
+  </section>
 
-  <!-- Badge collection -->
-  <div style="margin-bottom:32px;">
-    <h3 style="color:#00C6FF;font-family:'Press Start 2P',monospace;font-size:12px;margin:0 0 16px;">🏅 BADGE COLLECTION</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;" id="badges-grid">
-      <div class="skeleton" style="height:100px;"></div>
+  <section class="page" id="page-professors">
+    <div class="panel" style="padding:14px;margin-bottom:12px;">
+      <h2 style="margin:0 0 6px;font-size:22px;font-weight:700;letter-spacing:-0.01em;">Professor ratings by subject</h2>
+      <p class="subtle small" style="margin:0;">Shows the full relevant professor set for your current term, filtered by selected major/subject.</p>
     </div>
-  </div>
-
-  <!-- Streak panel -->
-  <div style="background:linear-gradient(135deg,#1A0E0A,#2A1510);border:1px solid #FF6B35;border-radius:20px;padding:24px;">
-    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
-      <div style="font-size:48px;filter:drop-shadow(0 0 16px #FF6B35);animation:float 1.5s ease-in-out infinite;">🔥</div>
-      <div>
-        <div style="font-size:36px;font-weight:900;color:#FF6B35;" id="streak-count">0</div>
-        <div style="font-size:13px;color:#A89FCC;">Day streak</div>
-      </div>
-      <div style="margin-left:auto;text-align:right;">
-        <div style="font-size:12px;color:#A89FCC;">Best streak</div>
-        <div style="font-size:20px;font-weight:900;color:#FFD700;" id="best-streak">0</div>
+    <div class="panel" style="padding:12px;margin-bottom:12px;display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:10px;align-items:center;">
+      <input id="prof-search" class="input" placeholder="Search professor or department" oninput="searchProfs()" />
+      <select id="major-select" class="input" onchange="loadProfsPage()"><option value="">All majors / programs</option></select>
+      <select id="subject-tag-filter" class="input" onchange="loadProfsPage()"><option value="">All subjects</option></select>
+      <div class="chips">
+        <button class="chip" onclick="filterProfs('LEGENDARY')">Legendary</button>
+        <button class="chip" onclick="filterProfs('RARE')">Rare</button>
+        <button class="chip" onclick="filterProfs('UNCOMMON')">Uncommon</button>
+        <button class="chip active" onclick="filterProfs('')">All</button>
       </div>
     </div>
-    <div style="display:flex;gap:8px;" id="streak-days">
-      <!-- 7 day indicators rendered by JS -->
+    <div id="prof-grid" class="prof-grid">
+      <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
     </div>
-    <button class="btn-primary" style="margin-top:16px;width:100%;" onclick="checkInStreak()">
-      🔥 Check In Today (+50 XP)
-    </button>
-  </div>
+  </section>
 
-</div><!-- /page-quests -->
-
-
-<!-- ─────────────────────────── PAGE: PROFESSORS ─────────────────────────── -->
-<div class="page" id="page-professors">
-
-  <div style="margin-bottom:20px;">
-    <h2 style="font-family:'Press Start 2P',monospace;font-size:16px;color:#B44FEF;margin:0 0 6px;">🃏 PROFESSOR CARDS</h2>
-    <p style="color:#A89FCC;font-size:13px;margin:0;">Pokémon-style cards ranked by RateMyProfessors rating. Collect them all.</p>
-  </div>
-
-  <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-    <input class="gsu-input" type="text" id="prof-search" placeholder="🔍 Search professors…" oninput="searchProfs()" style="max-width:320px;"/>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-      <button class="filter-chip" style="border-color:#FFD700;color:#FFD700;" onclick="filterProfs('LEGENDARY')">👑 Legendary</button>
-      <button class="filter-chip" style="border-color:#B44FEF;color:#B44FEF;" onclick="filterProfs('EPIC')">💜 Epic</button>
-      <button class="filter-chip" style="border-color:#3B82F6;color:#3B82F6;" onclick="filterProfs('RARE')">💙 Rare</button>
-      <button class="filter-chip" style="border-color:#22C55E;color:#22C55E;" onclick="filterProfs('UNCOMMON')">💚 Uncommon</button>
-      <button class="filter-chip" style="border-color:#8B5CF6;color:#8B5CF6;" onclick="filterProfs('')">All</button>
-    </div>
-  </div>
-
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;" id="prof-grid">
-    <div class="skeleton" style="height:220px;border-radius:20px;"></div>
-    <div class="skeleton" style="height:220px;border-radius:20px;"></div>
-    <div class="skeleton" style="height:220px;border-radius:20px;"></div>
-    <div class="skeleton" style="height:220px;border-radius:20px;"></div>
-    <div class="skeleton" style="height:220px;border-radius:20px;"></div>
-    <div class="skeleton" style="height:220px;border-radius:20px;"></div>
-  </div>
-
-</div><!-- /page-professors -->
-
-
-<!-- ─────────────────────────── PAGE: SCHEDULE ─────────────────────────── -->
-<div class="page" id="page-schedule">
-
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
-    <div>
-      <h2 style="font-family:'Press Start 2P',monospace;font-size:16px;color:#00FF87;margin:0 0 6px;">📅 SCHEDULE BUILDER</h2>
-      <p style="color:#A89FCC;font-size:13px;margin:0;">Build your perfect schedule. Earn XP for each combo. No conflicts shown in red.</p>
-    </div>
-    <div style="display:flex;gap:10px;align-items:center;">
-      <div style="background:#1E1B40;border:1px solid #00FF87;border-radius:12px;padding:8px 16px;font-size:13px;">
-        Total XP: <span style="color:#FFD700;font-weight:900;" id="schedule-xp">0</span>
-      </div>
-      <button class="btn-secondary" onclick="clearSchedule()">🗑️ Clear</button>
-      <button class="btn-primary" onclick="exportSchedule()">📤 Export</button>
-    </div>
-  </div>
-
-  <!-- Schedule classes list -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:24px;" id="schedule-list">
-    <div style="background:#12102A;border:2px dashed #2A2550;border-radius:16px;padding:32px;text-align:center;color:#A89FCC;grid-column:1/-1;">
-      <div style="font-size:40px;margin-bottom:10px;">📚</div>
-      <p>Add classes from the Explore tab to build your schedule.</p>
-    </div>
-  </div>
-
-  <!-- Weekly view -->
-  <div style="background:#12102A;border-radius:16px;padding:20px;border:1px solid #2A2550;overflow-x:auto;">
-    <h3 style="color:#00C6FF;margin:0 0 16px;font-size:14px;font-weight:700;">Weekly Calendar</h3>
-    <div style="display:grid;grid-template-columns:60px repeat(5,1fr);gap:2px;min-width:600px;" id="weekly-grid">
-      <!-- Rendered by JS -->
-    </div>
-  </div>
-
-</div><!-- /page-schedule -->
-
-
-<!-- ─────────────────────────── PAGE: LEADERBOARD ─────────────────────────── -->
-<div class="page" id="page-leaderboard">
-
-  <div style="margin-bottom:24px;">
-    <h2 style="font-family:'Press Start 2P',monospace;font-size:16px;color:#FFD700;margin:0 0 6px;">🏆 LEADERBOARD</h2>
-    <p style="color:#A89FCC;font-size:13px;margin:0;">Top Panthers by XP. Play more to climb the ranks.</p>
-  </div>
-
-  <!-- My rank card -->
-  <div style="background:linear-gradient(135deg,#1A1040,#0A1A3A);border:2px solid #FFD700;border-radius:20px;padding:20px;margin-bottom:24px;box-shadow:0 0 30px #FFD70022;">
-    <div style="display:flex;align-items:center;gap:16px;">
-      <div style="font-size:40px;animation:float 2s ease-in-out infinite;">🐾</div>
-      <div style="flex:1;">
-        <div style="font-size:18px;font-weight:900;color:#FFD700;">You</div>
-        <div style="font-size:13px;color:#A89FCC;">XP: <span id="my-xp-lb" style="color:#00FF87;font-weight:700;">0</span> · Level <span id="my-lvl-lb" style="color:#8B5CF6;font-weight:700;">1</span></div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:28px;font-weight:900;color:#FFD700;">Unranked</div>
-        <div style="font-size:12px;color:#A89FCC;">Keep exploring!</div>
+  <section class="page" id="page-schedule">
+    <div class="panel" style="padding:14px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div>
+          <h2 style="margin:0 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em;">Schedule</h2>
+          <div class="small muted">Keep selected classes in one place.</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="small muted">XP: <span id="schedule-xp">0</span></div>
+          <button class="btn" onclick="clearSchedule()">Clear</button>
+          <button class="btn primary" onclick="exportSchedule()">Export CSV</button>
+        </div>
       </div>
     </div>
-  </div>
+    <div id="schedule-list" class="class-grid"></div>
+  </section>
 
-  <!-- Leaderboard table -->
-  <div style="background:#12102A;border-radius:16px;overflow:hidden;border:1px solid #2A2550;" id="leaderboard-list">
-    <div class="skeleton" style="height:300px;border-radius:0;"></div>
-  </div>
+  <section class="page" id="page-quests">
+    <div class="panel" style="padding:14px;">
+      <h2 style="margin:0 0 6px;font-size:22px;font-weight:700;">Progress</h2>
+      <div class="small muted">XP, badges, and daily challenge progress are kept for compatibility with existing behavior.</div>
+    </div>
+    <div id="daily-challenges-grid" class="class-grid" style="margin-top:12px;"></div>
+    <div id="badges-grid" class="class-grid" style="margin-top:12px;"></div>
+  </section>
 
-</div><!-- /page-leaderboard -->
+  <section class="page" id="page-leaderboard">
+    <div class="panel" style="padding:14px;margin-bottom:12px;">
+      <h2 style="margin:0 0 6px;font-size:22px;font-weight:700;">Leaderboard</h2>
+      <div class="small muted">Sample leaderboard from API.</div>
+    </div>
+    <div id="leaderboard-list" class="panel" style="padding:10px;"></div>
+  </section>
+</main>
 
-
-</main><!-- /main -->
-
-<!-- ═══════════════════════════════════════════════════════════ CLASS MODAL -->
-<div id="class-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);overflow-y:auto;padding:20px;">
-  <div style="max-width:600px;margin:0 auto;background:#12102A;border-radius:24px;padding:28px;position:relative;" id="modal-content">
-    <button onclick="closeModal()" style="position:absolute;top:16px;right:16px;background:#2A2550;border:none;color:#A89FCC;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:16px;">✕</button>
+<div id="class-modal">
+  <div class="inner">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div style="font-weight:700;font-size:18px;">Class details</div>
+      <button class="btn" onclick="closeModal()">Close</button>
+    </div>
     <div id="modal-body"></div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════ FOOTER -->
-<footer style="text-align:center;padding:24px;color:#4A4570;font-size:12px;position:relative;z-index:1;">
-  OnlyPanther · Powered by GSU Banner & RateMyProfessors · Built with ❤️ for Panthers
-</footer>
-
-
-<!-- ═══════════════════════════════════════════════════════════ JAVASCRIPT -->
 <script>
-// ────────────────────────────────────────────────────────────────────────────
-//  CONSTANTS & STATE
-// ────────────────────────────────────────────────────────────────────────────
-
-const API = '';  // same origin
+const API = '';
+const BOOTSTRAP_DATA = window.__BOOTSTRAP_DATA__ || null;
 
 const RARITY_COLORS = {
-  LEGENDARY: '#FFD700', EPIC: '#B44FEF', RARE: '#3B82F6',
-  UNCOMMON:  '#22C55E', COMMON: '#94A3B8', UNKNOWN: '#64748B'
-};
-const RARITY_EMOJI = {
-  LEGENDARY: '👑', EPIC: '💜', RARE: '💙', UNCOMMON: '💚', COMMON: '⬜', UNKNOWN: '❓'
+  LEGENDARY: '#8aa6c7',
+  EPIC: '#7f8cae',
+  RARE: '#7391b4',
+  UNCOMMON: '#769b8c',
+  COMMON: '#8f98a6',
+  UNKNOWN: '#7d8795',
 };
 
 let state = {
   xp: 0, level: 1, streak: 0, bestStreak: 0,
   lastVisit: null, lastCheckIn: null,
-  badges: {},        // badge_id → true
-  schedule: [],      // array of class objects
-  dailyDone: {},     // challenge_id → true
-  currentTerm: '',
-  currentPage: 1,
-  totalClasses: 0,
-  pageSize: 30,
-  rarityFilter: '',
-  allProfs: {},       // name → rmp data (accumulated)
+  badges: {}, schedule: [], dailyDone: {},
+  currentTerm: '', currentPage: 1, totalClasses: 0, pageSize: 30,
+  rarityFilter: '', allProfs: {},
 };
 
-// Load state from localStorage
-function loadState() {
-  try {
-    const s = localStorage.getItem('op_state');
-    if (s) Object.assign(state, JSON.parse(s));
-  } catch(e) {}
-  checkStreakOnLoad();
-  updateHUD();
-}
-function saveState() {
-  localStorage.setItem('op_state', JSON.stringify(state));
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  XP & LEVELS
-// ────────────────────────────────────────────────────────────────────────────
-
-function xpForLevel(lvl) { return lvl * lvl * 100; }
-function currentLevelXP() { return xpForLevel(state.level); }
-function nextLevelXP()    { return xpForLevel(state.level + 1); }
-
-function addXP(amount, label, x, y) {
-  state.xp += amount;
-  // Level up
-  while (state.xp >= nextLevelXP()) {
-    state.level++;
-    showToast(`🎉 Level Up! You're now Level ${state.level}!`, 'success');
-    triggerLevelUpEffect();
-  }
-  saveState();
-  updateHUD();
-  if (label) showXPPop(amount, label, x, y);
-}
-
-function updateHUD() {
-  document.getElementById('hud-xp').textContent = state.xp.toLocaleString();
-  document.getElementById('hud-level').textContent = state.level;
-  document.getElementById('hud-streak').textContent = state.streak;
-  document.getElementById('my-xp-lb').textContent = state.xp.toLocaleString();
-  document.getElementById('my-lvl-lb').textContent = state.level;
-
-  const lvlXP = currentLevelXP();
-  const nxtXP = nextLevelXP();
-  const pct = Math.min(100, ((state.xp - lvlXP) / (nxtXP - lvlXP)) * 100);
-  document.getElementById('hud-xpbar').style.width = pct + '%';
-
-  // Streak display
-  document.getElementById('streak-count').textContent = state.streak;
-  document.getElementById('best-streak').textContent = state.bestStreak;
-  renderStreakDays();
-}
-
-function showXPPop(amount, label, mouseX, mouseY) {
-  const el = document.createElement('div');
-  el.className = 'xp-pop';
-  el.textContent = `+${amount} XP`;
-  const x = mouseX || window.innerWidth / 2;
-  const y = mouseY || 200;
-  el.style.left = (x - 30) + 'px';
-  el.style.top = (y - 20) + 'px';
-  document.getElementById('xp-pops').appendChild(el);
-  setTimeout(() => el.remove(), 1100);
-}
-
-function triggerLevelUpEffect() {
-  for (let i = 0; i < 30; i++) {
-    setTimeout(() => {
-      const el = document.createElement('div');
-      el.style.cssText = `
-        position:fixed;z-index:9999;pointer-events:none;font-size:20px;
-        left:${Math.random()*100}vw;top:${Math.random()*100}vh;
-        animation:xpPop 1.5s ease-out forwards;
-      `;
-      el.textContent = ['⭐','✨','🌟','💫','🎇'][Math.floor(Math.random()*5)];
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 1600);
-    }, i * 50);
-  }
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  STREAKS
-// ────────────────────────────────────────────────────────────────────────────
-
-function checkStreakOnLoad() {
-  const today = new Date().toDateString();
-  if (state.lastVisit !== today) {
-    const yesterday = new Date(Date.now() - 86400000).toDateString();
-    if (state.lastVisit === yesterday) {
-      // Continued streak
-    } else if (state.lastVisit && state.lastVisit !== today) {
-      // Broken streak
-      state.streak = 0;
-    }
-    state.lastVisit = today;
-    saveState();
-  }
-}
-
-function checkInStreak() {
-  const today = new Date().toDateString();
-  if (state.lastCheckIn === today) {
-    showToast('Already checked in today! Come back tomorrow 🔥', 'info');
-    return;
-  }
-  state.streak++;
-  state.bestStreak = Math.max(state.bestStreak, state.streak);
-  state.lastCheckIn = today;
-  addXP(50, '🔥 Streak Check-In');
-  saveState();
-  updateHUD();
-  checkBadge('streak_master', state.streak >= 7);
-  showToast(`🔥 ${state.streak}-day streak! +50 XP`, 'success');
-}
-
-function renderStreakDays() {
-  const el = document.getElementById('streak-days');
-  if (!el) return;
-  el.innerHTML = '';
-  for (let i = 0; i < 7; i++) {
-    const filled = i < Math.min(state.streak, 7);
-    const div = document.createElement('div');
-    div.style.cssText = `
-      flex:1;height:8px;border-radius:999px;
-      background:${filled ? 'linear-gradient(90deg,#FF6B35,#FFD700)' : '#2A2550'};
-      ${filled ? 'box-shadow:0 0 8px #FF6B3566;' : ''}
-    `;
-    el.appendChild(div);
-  }
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  NAVIGATION
-// ────────────────────────────────────────────────────────────────────────────
-
-const PAGES = ['explore', 'quests', 'professors', 'schedule', 'leaderboard'];
+const preloadedClassesByTerm = new Map();
+const preloadedSubjectsByTerm = new Map();
+let preloadedTerms = null;
+const toastState = { lastKey: '', lastAt: 0 };
+let _searchDebounce = null;
+let _profFilter = '';
+let _allProfData = [];
+let _allVisibleClasses = [];
 
 function showPage(name) {
-  PAGES.forEach(p => {
+  ['explore', 'professors', 'schedule', 'quests', 'leaderboard'].forEach(p => {
     document.getElementById('page-' + p).classList.toggle('active', p === name);
-    const tab = document.getElementById('tab-' + p);
-    if (tab) tab.classList.toggle('active', p === name);
+    const t = document.getElementById('tab-' + p);
+    if (t) t.classList.toggle('active', p === name);
   });
-  if (name === 'quests') renderQuests();
   if (name === 'professors') loadProfsPage();
   if (name === 'schedule') renderSchedulePage();
+  if (name === 'quests') renderQuests();
   if (name === 'leaderboard') loadLeaderboard();
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-//  TERMS
-// ────────────────────────────────────────────────────────────────────────────
+function saveState() { localStorage.setItem('op_state', JSON.stringify(state)); }
+function loadState() {
+  try {
+    const raw = localStorage.getItem('op_state');
+    if (raw) Object.assign(state, JSON.parse(raw));
+  } catch (_) {}
+}
+
+function showToast(msg, type = 'success') {
+  const key = `${type}:${msg}`;
+  const now = Date.now();
+  if (toastState.lastKey === key && now - toastState.lastAt < 1400) return;
+  toastState.lastKey = key;
+  toastState.lastAt = now;
+
+  const c = document.getElementById('toast-container');
+  const d = document.createElement('div');
+  d.className = `toast ${type}`;
+  d.textContent = msg;
+  c.appendChild(d);
+  setTimeout(() => {
+    d.style.opacity = '0';
+    d.style.transform = 'translateX(80px)';
+    d.style.transition = 'all .25s';
+    setTimeout(() => d.remove(), 260);
+  }, 2600);
+}
+
+function buildProfessorLink(profName, profData) {
+  if (profData && profData.rmp_id) {
+    const id = String(profData.rmp_id).replace(/[^0-9]/g, '');
+    if (id) return `https://www.ratemyprofessors.com/professor/${id}`;
+  }
+  const q = encodeURIComponent(`${profName || ''} Georgia State University`);
+  return `https://www.ratemyprofessors.com/search/professors?q=${q}`;
+}
+
+function hydrateFromBootstrap() {
+  if (!BOOTSTRAP_DATA) return;
+  if (Array.isArray(BOOTSTRAP_DATA.terms)) preloadedTerms = BOOTSTRAP_DATA.terms;
+  if (BOOTSTRAP_DATA.term && Array.isArray(BOOTSTRAP_DATA.subjects)) {
+    preloadedSubjectsByTerm.set(BOOTSTRAP_DATA.term, BOOTSTRAP_DATA.subjects);
+  }
+  if (BOOTSTRAP_DATA.term && BOOTSTRAP_DATA.classes_response) {
+    preloadedClassesByTerm.set(BOOTSTRAP_DATA.term, BOOTSTRAP_DATA.classes_response);
+  }
+}
+
+function renderSubjects(subjects) {
+  const subSel = document.getElementById('subject-select');
+  subSel.innerHTML = '<option value="">All subjects</option>';
+  (subjects || []).forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.code;
+    o.textContent = `${s.code} – ${s.description}`;
+    subSel.appendChild(o);
+  });
+
+  const majorSel = document.getElementById('major-select');
+  const majorPrev = majorSel.value;
+  majorSel.innerHTML = '<option value="">All majors / programs</option>';
+  (subjects || []).forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.code;
+    o.textContent = `${s.code} – ${s.description}`;
+    majorSel.appendChild(o);
+  });
+  majorSel.value = Array.from(majorSel.options).some(x => x.value === majorPrev) ? majorPrev : '';
+
+  const tagSel = document.getElementById('subject-tag-filter');
+  const tagPrev = tagSel.value;
+  tagSel.innerHTML = '<option value="">All subjects</option>';
+  (subjects || []).forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.code;
+    o.textContent = s.code;
+    tagSel.appendChild(o);
+  });
+  tagSel.value = Array.from(tagSel.options).some(x => x.value === tagPrev) ? tagPrev : '';
+}
 
 async function loadTerms() {
   try {
-    const r = await fetch(`${API}/api/terms`);
-    const data = await r.json();
+    const data = preloadedTerms ? { terms: preloadedTerms } : await (await fetch(`${API}/api/terms`)).json();
     const sel = document.getElementById('term-select');
     sel.innerHTML = '';
     if (data.terms && data.terms.length) {
       data.terms.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.code;
-        opt.textContent = t.description;
-        sel.appendChild(opt);
+        const o = document.createElement('option');
+        o.value = t.code;
+        o.textContent = t.description;
+        sel.appendChild(o);
       });
       state.currentTerm = data.terms[0].code;
       document.getElementById('hero-term-label').textContent = data.terms[0].description;
     } else {
-      // Fallback
       sel.innerHTML = '<option value="202608">Fall 2026</option>';
       state.currentTerm = '202608';
+      document.getElementById('hero-term-label').textContent = 'Fall 2026';
     }
+
+    if (preloadedClassesByTerm.has(state.currentTerm)) {
+      renderClassesResponse(preloadedClassesByTerm.get(state.currentTerm));
+    }
+
     await loadSubjects();
-    await loadClasses(true);
-  } catch(e) {
+    if (!preloadedClassesByTerm.has(state.currentTerm)) {
+      await loadClasses(true);
+    } else {
+      loadClasses(true); // SWR
+    }
+  } catch (e) {
     console.error('loadTerms', e);
     showToast('Could not connect to API', 'error');
+  }
+}
+
+async function loadSubjects() {
+  if (!state.currentTerm) return;
+  if (preloadedSubjectsByTerm.has(state.currentTerm)) {
+    renderSubjects(preloadedSubjectsByTerm.get(state.currentTerm));
+  }
+  try {
+    const data = await (await fetch(`${API}/api/subjects?term=${state.currentTerm}`)).json();
+    preloadedSubjectsByTerm.set(state.currentTerm, data.subjects || []);
+    renderSubjects(data.subjects || []);
+  } catch (e) {
+    console.error('loadSubjects', e);
   }
 }
 
@@ -892,254 +523,157 @@ function onTermChange() {
   state.currentTerm = sel.value;
   const label = sel.options[sel.selectedIndex]?.text || '';
   document.getElementById('hero-term-label').textContent = label;
+  if (preloadedClassesByTerm.has(state.currentTerm)) {
+    renderClassesResponse(preloadedClassesByTerm.get(state.currentTerm));
+  }
   loadSubjects();
   loadClasses(true);
 }
 
-async function loadSubjects() {
-  if (!state.currentTerm) return;
-  try {
-    const r = await fetch(`${API}/api/subjects?term=${state.currentTerm}`);
-    const data = await r.json();
-    const sel = document.getElementById('subject-select');
-    sel.innerHTML = '<option value="">All Subjects</option>';
-    (data.subjects || []).forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.code;
-      opt.textContent = `${s.code} – ${s.description}`;
-      sel.appendChild(opt);
-    });
-  } catch(e) {
-    console.error('loadSubjects', e);
-  }
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  CLASSES
-// ────────────────────────────────────────────────────────────────────────────
-
-let _searchDebounce = null;
-function debounceSearch() {
-  clearTimeout(_searchDebounce);
-  _searchDebounce = setTimeout(() => loadClasses(true), 500);
-}
-
 function setRarityFilter(r) {
   state.rarityFilter = r;
-  // Update chip styles
-  ['all','LEGENDARY','EPIC','RARE','UNCOMMON'].forEach(id => {
-    const chip = document.getElementById('chip-' + id);
-    if (!chip) return;
-    const active = (id === 'all' && r === '') || (id === r);
-    chip.style.opacity = active ? '1' : '0.4';
-    chip.style.transform = active ? 'scale(1.05)' : 'scale(1)';
+  ['all', 'LEGENDARY', 'EPIC', 'RARE', 'UNCOMMON'].forEach(id => {
+    const el = document.getElementById('chip-' + id);
+    if (!el) return;
+    const active = (id === 'all' && r === '') || id === r;
+    el.classList.toggle('active', active);
   });
   loadClasses(true);
 }
 
-async function loadClasses(reset = false) {
-  if (reset) state.currentPage = 1;
+function debounceSearch() {
+  clearTimeout(_searchDebounce);
+  _searchDebounce = setTimeout(() => loadClasses(true), 450);
+}
 
-  const q = document.getElementById('search-input')?.value || '';
-  const subj = document.getElementById('subject-select')?.value || '';
-  const openOnly = document.getElementById('open-only')?.checked || false;
-
+function buildClassParams() {
   const params = new URLSearchParams({
     term: state.currentTerm || '202608',
-    page: state.currentPage,
-    size: state.pageSize,
+    page: String(state.currentPage),
+    size: String(state.pageSize),
   });
-  if (q)             params.set('query', q);
-  if (subj)          params.set('subject', subj);
+  const q = document.getElementById('search-input').value.trim();
+  const subject = document.getElementById('subject-select').value;
+  const openOnly = document.getElementById('open-only').checked;
+  if (q) params.set('query', q);
+  if (subject) params.set('subject', subject);
   if (state.rarityFilter) params.set('rarity', state.rarityFilter);
-  if (openOnly)      params.set('open_only', '1');
-
-  const grid = document.getElementById('class-grid');
-  grid.innerHTML = renderSkeletons(6);
-
-  try {
-    const r = await fetch(`${API}/api/classes?${params}`);
-    if (!r.ok) throw new Error(r.statusText);
-    const data = await r.json();
-
-    state.totalClasses = data.total;
-
-    // Show scraping banner if needed
-    const banner = document.getElementById('scrape-banner');
-    if (data.scrape_in_progress) banner.style.display = 'block';
-    else banner.style.display = 'none';
-
-    // Update quick stats
-    document.getElementById('stat-total').textContent = (data.total || 0).toLocaleString();
-    // Count classes with open seats across the current page
-    const openCount = (data.classes || []).filter(c => c.seats_available > 0).length;
-    document.getElementById('stat-open').textContent = openCount.toLocaleString();
-    document.getElementById('stat-legendary').textContent = (data.rarity_breakdown?.LEGENDARY || 0).toLocaleString();
-    document.getElementById('stat-subjects').textContent =
-      Object.keys(data.subject_breakdown || {}).length.toLocaleString() || '—';
-
-    if (!data.classes || data.classes.length === 0) {
-      if (data.scrape_in_progress) {
-        grid.innerHTML = `
-          <div style="grid-column:1/-1;text-align:center;padding:60px 20px;">
-            <div class="spinner" style="margin-bottom:20px;"></div>
-            <div style="color:#A89FCC;font-size:14px;">Scanning GSU Banner for live class data…<br>
-            This is the first time, so it may take 1-2 minutes.</div>
-          </div>`;
-      } else {
-        grid.innerHTML = `
-          <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#A89FCC;">
-            <div style="font-size:48px;margin-bottom:12px;">🔍</div>
-            <div>No classes found. Try a different search.</div>
-          </div>`;
-      }
-      return;
-    }
-
-    grid.innerHTML = '';
-    (data.classes || []).forEach((cls, idx) => {
-      grid.appendChild(renderClassCard(cls, idx));
-      // Cache prof data as we encounter it
-      if (cls.professor) state.allProfs[cls.professor] = null;
-    });
-
-    updatePagination(data.total);
-
-    // Award XP for first search
-    completeDailyChallenge('dc_prof');
-
-  } catch(e) {
-    console.error('loadClasses', e);
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#FF2D7A;">
-      ⚠️ Could not load classes. Is the backend running?
-      <br><small style="color:#A89FCC;">Start it with: uvicorn app:app --reload</small>
-    </div>`;
-    showToast('Failed to load classes: ' + e.message, 'error');
-  }
+  if (openOnly) params.set('open_only', '1');
+  return params;
 }
 
 function renderSkeletons(n) {
-  return Array(n).fill(`<div class="skeleton" style="height:200px;border-radius:16px;"></div>`).join('');
+  return Array(n).fill('<div class="skeleton"></div>').join('');
 }
 
-function renderClassCard(cls, idx) {
+function renderClassesResponse(data) {
+  const grid = document.getElementById('class-grid');
+  state.totalClasses = data.total || 0;
+  document.getElementById('scrape-banner').style.display = data.scrape_in_progress ? 'block' : 'none';
+  document.getElementById('stat-total').textContent = (data.total || 0).toLocaleString();
+  document.getElementById('stat-open').textContent = ((data.classes || []).filter(c => c.seats_available > 0).length).toLocaleString();
+  document.getElementById('stat-legendary').textContent = (data.rarity_breakdown?.LEGENDARY || 0).toLocaleString();
+  document.getElementById('stat-subjects').textContent = Object.keys(data.subject_breakdown || {}).length.toLocaleString();
+
+  if (!data.classes || !data.classes.length) {
+    grid.innerHTML = data.scrape_in_progress
+      ? '<div class="panel" style="grid-column:1/-1;padding:24px;text-align:center;color:#9fb1c5;">Preparing fresh class data…</div>'
+      : '<div class="panel" style="grid-column:1/-1;padding:24px;text-align:center;color:#9fb1c5;">No classes found for these filters.</div>';
+    updatePagination(data.total || 0);
+    return;
+  }
+
+  grid.innerHTML = '';
+  (data.classes || []).forEach((cls, i) => {
+    grid.appendChild(renderClassCard(cls, i));
+    if (cls.professor) state.allProfs[cls.professor] = state.allProfs[cls.professor] || null;
+  });
+  updatePagination(data.total || 0);
+  completeDailyChallenge('dc_prof');
+}
+
+async function loadClasses(reset = false) {
+  if (reset) state.currentPage = 1;
+  const grid = document.getElementById('class-grid');
+  grid.innerHTML = renderSkeletons(6);
+  try {
+    const params = buildClassParams();
+    const resp = await fetch(`${API}/api/classes?${params.toString()}`);
+    if (!resp.ok) throw new Error(resp.statusText);
+    const data = await resp.json();
+    if (state.currentTerm) preloadedClassesByTerm.set(state.currentTerm, data);
+    renderClassesResponse(data);
+  } catch (e) {
+    console.error('loadClasses', e);
+    grid.innerHTML = '<div class="panel" style="grid-column:1/-1;padding:24px;text-align:center;color:#ad7082;">Could not load classes.</div>';
+    showToast('Failed to load classes', 'error');
+  }
+}
+
+function renderClassCard(cls) {
   const card = document.createElement('div');
-  card.className = `class-card rarity-${cls.rarity}`;
-  card.style.animationDelay = (idx * 0.05) + 's';
-  if (cls.rarity === 'LEGENDARY') card.classList.add('holo');
-
-  const profInitial = cls.professor ? cls.professor.split(',')[0][0] || '?' : '?';
-  const daysDisplay = cls.days && cls.days !== 'TBA'
-    ? cls.days.split('').map(d => `<span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:${['M','T','W','R','F'].includes(d)?'rgba(139,92,246,0.3)':'rgba(255,107,53,0.3)'};border:1px solid ${['M','T','W','R','F'].includes(d)?'#8B5CF6':'#FF6B35'};font-size:10px;line-height:22px;text-align:center;font-weight:700;color:${['M','T','W','R','F'].includes(d)?'#8B5CF6':'#FF6B35'}">${d}</span>`).join('')
-    : '<span style="color:#64748B;font-size:12px;">TBA</span>';
-
-  const seatsColor = cls.seats_available === 0 ? '#FF2D7A' :
-                     cls.seats_available <= 5 ? '#FF6B35' :
-                     cls.seats_available <= 15 ? '#FFD700' : '#00FF87';
-
-  const isInSchedule = state.schedule.some(s => s.crn === cls.crn);
+  card.className = 'class-card';
+  const inSchedule = state.schedule.some(x => x.crn === cls.crn);
+  const seatsColor = cls.seats_available === 0 ? 'var(--danger)' : 'var(--success)';
+  const initials = cls.professor ? (cls.professor.split(',')[0]?.trim()[0] || '?') : '?';
 
   card.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:11px;font-weight:700;color:${RARITY_COLORS[cls.rarity]};background:${RARITY_COLORS[cls.rarity]}22;padding:2px 8px;border-radius:999px;border:1px solid ${RARITY_COLORS[cls.rarity]}66;">
-          ${RARITY_EMOJI[cls.rarity]} ${cls.rarity}
-        </span>
-        <span style="font-size:10px;color:#64748B;">⚡${cls.xp} XP</span>
-      </div>
-      <span style="font-size:10px;font-family:'Press Start 2P',monospace;color:#4A4570;">CRN: ${cls.crn}</span>
-    </div>
-
-    <div style="margin-bottom:10px;">
-      <div style="font-size:15px;font-weight:700;color:#E2D9FF;margin-bottom:3px;line-height:1.3;">
-        ${cls.subject} ${cls.course_number}: ${cls.title}
-      </div>
-      <div style="font-size:12px;color:#A89FCC;">${cls.schedule_type || 'Lecture'} · ${cls.credit_hours || 0} credits</div>
-    </div>
-
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#00C6FF);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;flex-shrink:0;">
-        ${profInitial}
-      </div>
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
       <div>
-        <div style="font-size:13px;font-weight:600;color:#C4B8EE;">${cls.professor || 'TBA'}</div>
-        <div style="font-size:11px;color:#64748B;" id="rmp-${cls.crn}">
-          <span style="color:#2A2550;">Loading rating…</span>
-        </div>
+        <div style="font-size:15px;font-weight:700;line-height:1.35;">${cls.subject} ${cls.course_number}: ${cls.title}</div>
+        <div class="small muted">${cls.schedule_type || 'Lecture'} · ${cls.credit_hours || 0} credits · CRN ${cls.crn}</div>
+      </div>
+      <div class="small" style="color:${RARITY_COLORS[cls.rarity] || '#8f98a6'};font-weight:700;">${cls.rarity || 'UNKNOWN'}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+      <div style="width:30px;height:30px;border-radius:50%;background:#2b3746;display:flex;align-items:center;justify-content:center;font-weight:700;">${initials}</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;">${cls.professor || 'TBA'}</div>
+        <div id="rmp-${cls.crn}" class="small muted">Loading rating…</div>
       </div>
     </div>
-
-    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
-      ${daysDisplay}
-      <span style="font-size:12px;color:#8B9EC7;margin-left:4px;">
-        ${cls.begin_time !== 'TBA' ? cls.begin_time + ' – ' + cls.end_time : 'TBA'}
-      </span>
-    </div>
-
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <span style="font-size:11px;color:#A89FCC;">📍 ${cls.building !== 'TBA' ? cls.building + ' ' + cls.room : 'Online / TBA'}</span><br/>
-        <span style="font-size:13px;font-weight:800;color:${seatsColor};">
-          ${cls.seats_available === 0 ? '🔴 Full' : `🟢 ${cls.seats_available} seats`}
-          <span style="font-size:10px;color:#64748B;">/${cls.seats_max}</span>
-        </span>
+    <div class="small muted" style="margin-top:8px;">${cls.days !== 'TBA' ? cls.days : 'TBA'} · ${cls.begin_time} – ${cls.end_time}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px;">
+      <div class="small muted">
+        ${cls.building !== 'TBA' ? `${cls.building} ${cls.room}` : 'Online / TBA'}<br/>
+        <span style="color:${seatsColor};font-weight:700;">${cls.seats_available === 0 ? 'Full' : `${cls.seats_available} seats`}</span>
+        <span style="color:#7e8ea1;"> / ${cls.seats_max}</span>
       </div>
       <div style="display:flex;gap:6px;">
-        <button onclick="event.stopPropagation();openClassModal(${JSON.stringify(cls).replace(/"/g,'&quot;')})"
-          style="background:#1E1B40;border:1px solid #2A2550;color:#A89FCC;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;transition:all 0.2s;"
-          onmouseover="this.style.borderColor='#8B5CF6'" onmouseout="this.style.borderColor='#2A2550'">
-          🔍 Details
-        </button>
-        <button
-          id="add-btn-${cls.crn}"
-          onclick="event.stopPropagation();toggleSchedule(${JSON.stringify(cls).replace(/"/g,'&quot;')}, this)"
-          style="background:${isInSchedule ? 'rgba(0,255,135,0.2)' : 'linear-gradient(135deg,#8B5CF6,#00C6FF)'};border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;font-weight:700;transition:all 0.2s;${isInSchedule ? 'border:1px solid #00FF87;' : ''}">
-          ${isInSchedule ? '✓ Added' : '+ Add'}
-        </button>
+        <button class="btn" onclick="event.stopPropagation();openClassModal(${JSON.stringify(cls).replace(/"/g, '&quot;')})">Details</button>
+        <button class="btn primary" id="add-btn-${cls.crn}" onclick="event.stopPropagation();toggleSchedule(${JSON.stringify(cls).replace(/"/g, '&quot;')}, this)">${inSchedule ? 'Added' : 'Add'}</button>
       </div>
     </div>
   `;
 
   card.onclick = () => openClassModal(cls);
-
-  // Lazy-load RMP rating
-  if (cls.professor && cls.professor !== 'TBA') {
-    loadRMPForCard(cls.crn, cls.professor);
-  }
-
+  if (cls.professor && cls.professor !== 'TBA') loadRMPForCard(cls.crn, cls.professor);
   return card;
 }
 
 async function loadRMPForCard(crn, profName) {
+  const el = document.getElementById('rmp-' + crn);
+  if (!el) return;
   try {
-    const r = await fetch(`${API}/api/prof/${encodeURIComponent(profName)}`);
-    const data = await r.json();
-    const el = document.getElementById('rmp-' + crn);
-    if (!el) return;
+    const data = await (await fetch(`${API}/api/prof/${encodeURIComponent(profName)}`)).json();
     if (data.avg_rating != null) {
-      const stars = '⭐'.repeat(Math.round(data.avg_rating));
-      el.innerHTML = `
-        <span style="color:${RARITY_COLORS[data.rarity]};">
-          ${RARITY_EMOJI[data.rarity]} ${data.avg_rating.toFixed(1)}/5
-        </span>
-        <span style="color:#64748B;"> · diff ${data.avg_difficulty?.toFixed(1) || '?'} · ${data.num_ratings || 0} ratings</span>
-      `;
+      const href = buildProfessorLink(profName, data);
+      el.innerHTML = `<span style="color:#b6c8dd;">${data.avg_rating.toFixed(1)}/5</span> · ${data.num_ratings || 0} ratings · <a href="${href}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">RMP</a>`;
       state.allProfs[profName] = data;
     } else {
-      el.innerHTML = `<span style="color:#4A4570;">No RMP data</span>`;
+      el.innerHTML = `<a href="${buildProfessorLink(profName, null)}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Search RMP</a>`;
     }
-  } catch(e) {
-    const el = document.getElementById('rmp-' + crn);
-    if (el) el.innerHTML = '<span style="color:#4A4570;">—</span>';
+  } catch (_) {
+    el.innerHTML = `<a href="${buildProfessorLink(profName, null)}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Search RMP</a>`;
   }
 }
 
 function updatePagination(total) {
-  const maxPage = Math.ceil(total / state.pageSize);
-  document.getElementById('page-label').textContent = `Page ${state.currentPage} of ${maxPage || 1}`;
+  const max = Math.ceil(total / state.pageSize) || 1;
+  document.getElementById('page-label').textContent = `Page ${state.currentPage} of ${max}`;
   document.getElementById('prev-btn').disabled = state.currentPage <= 1;
-  document.getElementById('next-btn').disabled = state.currentPage >= maxPage;
-  document.getElementById('pagination').style.display = maxPage > 1 ? 'flex' : 'none';
+  document.getElementById('next-btn').disabled = state.currentPage >= max;
+  document.getElementById('pagination').style.display = max > 1 ? 'flex' : 'none';
 }
 
 function changePage(dir) {
@@ -1149,643 +683,291 @@ function changePage(dir) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-//  CLASS MODAL
-// ────────────────────────────────────────────────────────────────────────────
-
 function openClassModal(cls) {
-  document.getElementById('class-modal').style.display = 'block';
-
-  addXP(cls.xp, `🎯 Viewed ${cls.subject}${cls.course_number}`);
-  completeDailyChallenge(
-    cls.rarity === 'EPIC' ? 'dc_epic' :
-    cls.rarity === 'LEGENDARY' ? 'dc_legend' :
-    cls.seats_available < 5 ? 'dc_seats' : null
-  );
-
-  const color = RARITY_COLORS[cls.rarity];
   const body = document.getElementById('modal-body');
+  const inSchedule = state.schedule.some(x => x.crn === cls.crn);
   body.innerHTML = `
-    <div style="margin-bottom:16px;">
-      <span style="font-size:11px;font-weight:700;color:${color};background:${color}22;padding:3px 10px;border-radius:999px;border:1px solid ${color}66;">
-        ${RARITY_EMOJI[cls.rarity]} ${cls.rarity} CLASS
-      </span>
+    <div style="font-size:20px;font-weight:700;">${cls.subject} ${cls.course_number}</div>
+    <div class="small muted" style="margin-top:2px;">${cls.title}</div>
+    <div class="panel" style="padding:12px;margin-top:12px;">
+      <div class="small muted">Professor</div>
+      <div style="margin-top:3px;font-weight:600;">${cls.professor || 'TBA'}</div>
+      <div id="modal-rmp-data" class="small muted" style="margin-top:6px;">Loading RateMyProfessors data…</div>
     </div>
-    <h2 style="font-size:20px;font-weight:900;color:#E2D9FF;margin:0 0 4px;">
-      ${cls.subject} ${cls.course_number}
-    </h2>
-    <h3 style="font-size:16px;color:#A89FCC;margin:0 0 20px;font-weight:400;">${cls.title}</h3>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
-      <div style="background:#1E1B40;border-radius:12px;padding:14px;">
-        <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">CRN</div>
-        <div style="font-size:18px;font-weight:900;color:#00C6FF;font-family:'Press Start 2P',monospace;font-size:14px;">${cls.crn}</div>
-      </div>
-      <div style="background:#1E1B40;border-radius:12px;padding:14px;">
-        <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">XP Reward</div>
-        <div style="font-size:18px;font-weight:900;color:#FFD700;">⚡ ${cls.xp} XP</div>
-      </div>
-      <div style="background:#1E1B40;border-radius:12px;padding:14px;">
-        <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Credits</div>
-        <div style="font-size:18px;font-weight:900;color:#00FF87;">${cls.credit_hours || '?'}</div>
-      </div>
-      <div style="background:#1E1B40;border-radius:12px;padding:14px;">
-        <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Seats</div>
-        <div style="font-size:18px;font-weight:900;color:${cls.seats_available === 0 ? '#FF2D7A' : '#00FF87'};">
-          ${cls.seats_available === 0 ? '🔴 FULL' : cls.seats_available + ' / ' + cls.seats_max}
-        </div>
-      </div>
+    <div class="panel" style="padding:12px;margin-top:10px;">
+      <div class="small muted">Meeting</div>
+      <div style="margin-top:3px;">${cls.days} · ${cls.begin_time} – ${cls.end_time}</div>
+      <div class="small muted" style="margin-top:3px;">${cls.building} ${cls.room}</div>
     </div>
-
-    <div style="background:#1E1B40;border-radius:12px;padding:16px;margin-bottom:16px;">
-      <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Schedule</div>
-      <div style="font-size:14px;color:#E2D9FF;">
-        📅 Days: <strong style="color:#8B5CF6;">${cls.days !== 'TBA' ? cls.days : 'TBA'}</strong><br/>
-        ⏰ Time: <strong style="color:#00C6FF;">${cls.begin_time} – ${cls.end_time}</strong><br/>
-        📍 Location: <strong style="color:#00FF87;">${cls.building} ${cls.room}</strong>
-      </div>
-    </div>
-
-    <div id="modal-rmp" style="background:linear-gradient(135deg,#1A1040,#0F1A30);border-radius:12px;padding:16px;margin-bottom:20px;">
-      <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Professor</div>
-      <div style="font-size:15px;font-weight:700;color:#C4B8EE;margin-bottom:8px;">${cls.professor || 'TBA'}</div>
-      <div id="modal-rmp-data" style="color:#A89FCC;font-size:13px;">Loading RMP data…</div>
-    </div>
-
-    <div style="display:flex;gap:10px;">
-      <button class="btn-primary" style="flex:1;" onclick="toggleSchedule(${JSON.stringify(cls).replace(/"/g,'&quot;')}, null);closeModal();">
-        ${state.schedule.some(s => s.crn === cls.crn) ? '✓ In Schedule' : '+ Add to Schedule'}
-      </button>
-      <button class="btn-secondary" onclick="closeModal()">Close</button>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn primary" onclick="toggleSchedule(${JSON.stringify(cls).replace(/"/g, '&quot;')}, null);closeModal();">${inSchedule ? 'In schedule' : 'Add to schedule'}</button>
+      <button class="btn" onclick="closeModal()">Close</button>
     </div>
   `;
+  document.getElementById('class-modal').style.display = 'block';
 
-  // Load RMP for modal
   if (cls.professor && cls.professor !== 'TBA') {
     fetch(`${API}/api/prof/${encodeURIComponent(cls.professor)}`)
       .then(r => r.json())
       .then(data => {
-        const el = document.getElementById('modal-rmp-data');
-        if (!el) return;
+        const target = document.getElementById('modal-rmp-data');
+        if (!target) return;
         if (data.avg_rating != null) {
-          el.innerHTML = `
-            <div style="display:flex;gap:12px;flex-wrap:wrap;">
-              <div style="text-align:center;">
-                <div style="font-size:28px;font-weight:900;color:${RARITY_COLORS[data.rarity]};">${data.avg_rating.toFixed(1)}</div>
-                <div style="font-size:10px;color:#64748B;">Overall</div>
-              </div>
-              <div style="text-align:center;">
-                <div style="font-size:28px;font-weight:900;color:#FF6B35;">${data.avg_difficulty?.toFixed(1) || '?'}</div>
-                <div style="font-size:10px;color:#64748B;">Difficulty</div>
-              </div>
-              <div style="text-align:center;">
-                <div style="font-size:28px;font-weight:900;color:#00FF87;">${data.would_take_again != null ? Math.round(data.would_take_again) + '%' : '?'}</div>
-                <div style="font-size:10px;color:#64748B;">Would Take Again</div>
-              </div>
-              <div style="text-align:center;">
-                <div style="font-size:28px;font-weight:900;color:#A89FCC;">${data.num_ratings || 0}</div>
-                <div style="font-size:10px;color:#64748B;">Ratings</div>
-              </div>
-            </div>
-            <div style="margin-top:8px;">
-              <span style="color:${RARITY_COLORS[data.rarity]};font-weight:700;">${RARITY_EMOJI[data.rarity]} ${data.rarity} Professor</span>
-              ${data.department ? `<span style="color:#64748B;margin-left:8px;">· ${data.department}</span>` : ''}
-            </div>
-            <a href="https://www.ratemyprofessors.com/professor/${data.rmp_id ? data.rmp_id.replace(/[^0-9]/g,'') : ''}"
-               target="_blank" rel="noopener"
-               style="display:inline-block;margin-top:10px;font-size:12px;color:#00C6FF;text-decoration:none;"
-               ${!data.rmp_id ? 'style="pointer-events:none;opacity:0.4;"' : ''}>
-              🔗 View on RateMyProfessors →
-            </a>
-          `;
+          target.innerHTML = `${data.avg_rating.toFixed(1)}/5 · ${data.num_ratings || 0} ratings · <a href="${buildProfessorLink(cls.professor, data)}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Open RMP</a>`;
         } else {
-          el.innerHTML = '<span style="color:#4A4570;">No RateMyProfessors data found</span>';
+          target.innerHTML = `<a href="${buildProfessorLink(cls.professor, null)}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Search this professor on RMP</a>`;
         }
       })
       .catch(() => {
-        const el = document.getElementById('modal-rmp-data');
-        if (el) el.innerHTML = '<span style="color:#4A4570;">Could not load RMP data</span>';
+        const target = document.getElementById('modal-rmp-data');
+        if (!target) return;
+        target.innerHTML = `<a href="${buildProfessorLink(cls.professor, null)}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Search this professor on RMP</a>`;
       });
-  } else {
-    document.getElementById('modal-rmp-data').innerHTML = '<span style="color:#4A4570;">No professor assigned</span>';
   }
 }
 
 function closeModal() {
   document.getElementById('class-modal').style.display = 'none';
 }
-
 document.getElementById('class-modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('class-modal')) closeModal();
+  if (e.target.id === 'class-modal') closeModal();
 });
 
-// ────────────────────────────────────────────────────────────────────────────
-//  SCHEDULE
-// ────────────────────────────────────────────────────────────────────────────
-
 function toggleSchedule(cls, btn) {
-  const idx = state.schedule.findIndex(s => s.crn === cls.crn);
+  const idx = state.schedule.findIndex(x => x.crn === cls.crn);
   if (idx >= 0) {
     state.schedule.splice(idx, 1);
-    showToast(`Removed ${cls.subject} ${cls.course_number} from schedule`, 'info');
-    if (btn) { btn.textContent = '+ Add'; btn.style.background = 'linear-gradient(135deg,#8B5CF6,#00C6FF)'; }
+    if (btn) btn.textContent = 'Add';
   } else {
     state.schedule.push(cls);
-    addXP(cls.xp, `📅 Added to schedule`);
-    showToast(`✅ ${cls.subject} ${cls.course_number} added! +${cls.xp} XP`, 'success');
-    if (btn) { btn.textContent = '✓ Added'; btn.style.background = 'rgba(0,255,135,0.2)'; btn.style.border = '1px solid #00FF87'; }
-    checkBadge('schedule_wizard', state.schedule.length >= 4);
-    checkBadge('polymath', new Set(state.schedule.map(c => c.subject)).size >= 4);
-    completeDailyChallenge('dc_schedule', state.schedule.length >= 3);
+    if (btn) btn.textContent = 'Added';
   }
   saveState();
-  document.getElementById('schedule-xp').textContent =
-    state.schedule.reduce((a, c) => a + (c.xp || 0), 0);
+  document.getElementById('schedule-xp').textContent = state.schedule.reduce((a, c) => a + (c.xp || 0), 0);
 }
 
 function renderSchedulePage() {
   const list = document.getElementById('schedule-list');
-  document.getElementById('schedule-xp').textContent =
-    state.schedule.reduce((a, c) => a + (c.xp || 0), 0);
-
-  if (state.schedule.length === 0) {
-    list.innerHTML = `
-      <div style="background:#12102A;border:2px dashed #2A2550;border-radius:16px;padding:32px;text-align:center;color:#A89FCC;grid-column:1/-1;">
-        <div style="font-size:40px;margin-bottom:10px;">📚</div>
-        <p>Add classes from the Explore tab to build your schedule.</p>
-      </div>`;
-    renderWeeklyGrid([]);
+  document.getElementById('schedule-xp').textContent = state.schedule.reduce((a, c) => a + (c.xp || 0), 0);
+  if (!state.schedule.length) {
+    list.innerHTML = '<div class="panel" style="grid-column:1/-1;padding:18px;text-align:center;color:#9fb1c5;">No classes added yet.</div>';
     return;
   }
-
   list.innerHTML = '';
-  state.schedule.forEach(cls => {
-    const div = document.createElement('div');
-    div.className = 'schedule-slot animate-slide-in';
-    div.style.cssText = `background:#12102A;border-radius:14px;padding:16px;border:1px solid ${RARITY_COLORS[cls.rarity] || '#2A2550'};`;
-    div.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+  state.schedule.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'class-card';
+    d.innerHTML = `
+      <div style="display:flex;justify-content:space-between;gap:8px;">
         <div>
-          <div style="font-size:14px;font-weight:700;color:#E2D9FF;">${cls.subject} ${cls.course_number}</div>
-          <div style="font-size:12px;color:#A89FCC;">${cls.title}</div>
+          <div style="font-weight:700;">${c.subject} ${c.course_number}</div>
+          <div class="small muted">${c.title}</div>
         </div>
-        <button onclick="toggleSchedule(${JSON.stringify(cls).replace(/"/g,'&quot;')}, null);renderSchedulePage();"
-          style="background:none;border:1px solid #FF2D7A;color:#FF2D7A;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;">
-          Remove
-        </button>
+        <button class="btn" onclick="toggleSchedule(${JSON.stringify(c).replace(/"/g, '&quot;')}, null);renderSchedulePage();">Remove</button>
       </div>
-      <div style="font-size:12px;color:#8B9EC7;">
-        📅 ${cls.days !== 'TBA' ? cls.days : 'TBA'} · ⏰ ${cls.begin_time} – ${cls.end_time}<br/>
-        👤 ${cls.professor || 'TBA'} · 📍 ${cls.building} ${cls.room}
-      </div>
-      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
-        <span style="color:${RARITY_COLORS[cls.rarity]};font-size:11px;">${RARITY_EMOJI[cls.rarity]} ${cls.rarity}</span>
-        <span style="color:#FFD700;font-size:11px;">⚡ ${cls.xp} XP</span>
-        <span style="color:${cls.seats_available === 0 ? '#FF2D7A' : '#00FF87'};font-size:11px;">
-          ${cls.seats_available === 0 ? '🔴 FULL' : '🟢 ' + cls.seats_available + ' seats'}
-        </span>
-      </div>
+      <div class="small muted" style="margin-top:8px;">${c.days} · ${c.begin_time} – ${c.end_time} · ${c.professor || 'TBA'}</div>
     `;
-    list.appendChild(div);
+    list.appendChild(d);
   });
-
-  renderWeeklyGrid(state.schedule);
-}
-
-function renderWeeklyGrid(classes) {
-  const grid = document.getElementById('weekly-grid');
-  const days = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
-  const dayKeys = { M:'MON', T:'TUE', W:'WED', R:'THU', F:'FRI' };
-
-  // Header
-  let html = `<div style="font-size:11px;color:#64748B;padding:8px 4px;">TIME</div>`;
-  days.forEach(d => {
-    html += `<div style="font-size:11px;font-weight:700;color:#8B5CF6;padding:8px 4px;text-align:center;">${d}</div>`;
-  });
-
-  // Time slots 8am-8pm
-  for (let h = 8; h <= 20; h++) {
-    const timeLabel = h <= 12 ? `${h}:00 AM` : `${h-12}:00 PM`;
-    html += `<div style="font-size:9px;color:#4A4570;padding:4px;border-top:1px solid #1E1B40;">${h}:00</div>`;
-    days.forEach((_, di) => {
-      const dayKey = Object.keys(dayKeys)[di];
-      const cls = classes.find(c => {
-        const begin = parseInt(c.begin_time?.replace(/[^0-9]/g,'') || '0');
-        const beginH = Math.floor(begin / 100);
-        const ampm = c.begin_time?.includes('PM') && beginH < 12 ? beginH + 12 : beginH;
-        return c.days?.includes(dayKey) && ampm === h;
-      });
-      if (cls) {
-        html += `<div style="background:linear-gradient(135deg,${RARITY_COLORS[cls.rarity]}33,${RARITY_COLORS[cls.rarity]}11);border:1px solid ${RARITY_COLORS[cls.rarity]}66;border-radius:6px;padding:4px;font-size:9px;color:${RARITY_COLORS[cls.rarity]};overflow:hidden;border-top:1px solid #1E1B40;">
-          <strong>${cls.subject} ${cls.course_number}</strong><br/>${cls.begin_time}
-        </div>`;
-      } else {
-        html += `<div style="border-top:1px solid #1E1B40;height:36px;"></div>`;
-      }
-    });
-  }
-
-  grid.innerHTML = html;
 }
 
 function clearSchedule() {
-  if (!confirm('Clear all classes from your schedule?')) return;
+  if (!confirm('Clear all classes from schedule?')) return;
   state.schedule = [];
   saveState();
   renderSchedulePage();
-  showToast('Schedule cleared', 'info');
 }
 
 function exportSchedule() {
-  const lines = ['CRN,Subject,Course,Title,Professor,Days,Time,Building,Room,Seats,XP'];
+  const rows = ['CRN,Subject,Course,Title,Professor,Days,Time,Building,Room,Seats,XP'];
   state.schedule.forEach(c => {
-    lines.push([c.crn, c.subject, c.course_number, `"${c.title}"`,
-      `"${c.professor}"`, c.days, `"${c.begin_time}-${c.end_time}"`,
-      c.building, c.room, c.seats_available, c.xp].join(','));
+    rows.push([c.crn, c.subject, c.course_number, `"${c.title}"`, `"${c.professor}"`, c.days, `"${c.begin_time}-${c.end_time}"`, c.building, c.room, c.seats_available, c.xp].join(','));
   });
-  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'my_panther_schedule.csv';
-  a.click(); URL.revokeObjectURL(url);
-  addXP(25, '📤 Schedule Exported');
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  QUESTS & BADGES
-// ────────────────────────────────────────────────────────────────────────────
-
-async function renderQuests() {
-  // Daily challenges
-  let challenges;
-  try {
-    const r = await fetch(`${API}/api/gamification/challenges`);
-    const d = await r.json();
-    challenges = d.challenges;
-  } catch(e) {
-    challenges = [];
-  }
-
-  const grid = document.getElementById('daily-challenges-grid');
-  grid.innerHTML = '';
-  (challenges || []).forEach(ch => {
-    const done = state.dailyDone[ch.id];
-    const div = document.createElement('div');
-    div.className = 'quest-card';
-    div.style.opacity = done ? '0.6' : '1';
-    div.innerHTML = `
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-        <div style="font-size:28px;">${ch.icon}</div>
-        <div>
-          <div style="font-weight:700;color:#E2D9FF;">${ch.name}</div>
-          <div style="font-size:12px;color:#A89FCC;">${ch.desc}</div>
-        </div>
-        ${done ? '<div style="margin-left:auto;font-size:20px;">✅</div>' : ''}
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <span style="color:#FFD700;font-weight:700;font-size:13px;">⚡ +${ch.xp} XP</span>
-        ${done ? '<span style="font-size:11px;color:#00FF87;">Completed!</span>' :
-                 '<span style="font-size:11px;color:#64748B;">In Progress</span>'}
-      </div>
-    `;
-    grid.appendChild(div);
-  });
-
-  // Badges
-  let allBadges;
-  try {
-    const r = await fetch(`${API}/api/gamification/badges`);
-    const d = await r.json();
-    allBadges = d.badges;
-  } catch(e) {
-    allBadges = [];
-  }
-
-  const badgeGrid = document.getElementById('badges-grid');
-  badgeGrid.innerHTML = '';
-  (allBadges || []).forEach(b => {
-    const earned = state.badges[b.id];
-    const div = document.createElement('div');
-    div.style.cssText = `
-      background:${earned ? 'linear-gradient(135deg,#1A1040,#3B1D7A)' : '#12102A'};
-      border:1px solid ${earned ? '#FFD700' : '#2A2550'};
-      border-radius:14px; padding:16px; text-align:center;
-      ${earned ? 'box-shadow:0 0 15px #FFD70033;' : 'opacity:0.5;'}
-    `;
-    div.innerHTML = `
-      <div style="font-size:32px;margin-bottom:8px;${earned ? '' : 'filter:grayscale(1)'}">${b.icon}</div>
-      <div style="font-size:12px;font-weight:700;color:${earned ? '#FFD700' : '#A89FCC'};">${b.name}</div>
-      <div style="font-size:10px;color:#64748B;margin-top:4px;">${b.desc}</div>
-      ${earned ? '<div style="margin-top:8px;font-size:10px;color:#FFD700;">EARNED ✓</div>' : ''}
-    `;
-    badgeGrid.appendChild(div);
-  });
-
-  // Daily timer
-  const midnight = new Date();
-  midnight.setHours(24, 0, 0, 0);
-  const diff = midnight - new Date();
-  const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  document.getElementById('daily-timer').textContent = `Resets in: ${h}h ${m}m`;
+  a.href = url;
+  a.download = 'my_panther_schedule.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function checkBadge(id, condition) {
   if (condition && !state.badges[id]) {
     state.badges[id] = true;
     saveState();
-    const badge = { rare_avoider:'💎 Rare Avoider', prof_slayer:'⚔️ Prof Slayer',
-      night_owl:'🦉 Night Owl', early_bird:'🐦 Early Bird', xp_grinder:'⚡ XP Grinder',
-      schedule_wizard:'🧙 Schedule Wizard', streak_master:'🔥 Streak Master',
-      polymath:'🎓 Polymath' }[id] || id;
-    showToast(`🏅 Badge Unlocked: ${badge}!`, 'success');
-    addXP(100, `🏅 Badge: ${badge}`);
+    showToast(`Badge unlocked: ${id}`, 'success');
   }
 }
 
 function completeDailyChallenge(id, condition = true) {
   if (!id || !condition) return;
-  const today = new Date().toDateString();
-  const key = id + '_' + today;
+  const key = id + '_' + new Date().toDateString();
   if (state.dailyDone[key]) return;
   state.dailyDone[key] = true;
-
-  const XP_MAP = { dc_epic:75, dc_seats:100, dc_prof:50, dc_schedule:150, dc_legend:200 };
-  const xp = XP_MAP[id] || 50;
-  addXP(xp, `🎯 Daily Challenge Complete`);
-  showToast(`🎯 Daily Challenge Complete! +${xp} XP`, 'success');
   saveState();
+  showToast('Daily challenge completed', 'success');
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-//  PROFESSORS PAGE
-// ────────────────────────────────────────────────────────────────────────────
+async function renderQuests() {
+  const dGrid = document.getElementById('daily-challenges-grid');
+  const bGrid = document.getElementById('badges-grid');
+  dGrid.innerHTML = '';
+  bGrid.innerHTML = '';
+  try {
+    const c = await (await fetch(`${API}/api/gamification/challenges`)).json();
+    (c.challenges || []).forEach(ch => {
+      const done = !!state.dailyDone[ch.id + '_' + new Date().toDateString()];
+      const el = document.createElement('div');
+      el.className = 'panel';
+      el.style.padding = '12px';
+      el.innerHTML = `<div style="font-weight:700;">${ch.name}</div><div class="small muted">${ch.desc}</div><div class="small" style="margin-top:8px;color:${done ? '#9ec2a8' : '#9fb1c5'};">${done ? 'Completed' : 'In progress'} · +${ch.xp} XP</div>`;
+      dGrid.appendChild(el);
+    });
+  } catch (_) {}
+  try {
+    const b = await (await fetch(`${API}/api/gamification/badges`)).json();
+    (b.badges || []).forEach(bg => {
+      const earned = !!state.badges[bg.id];
+      const el = document.createElement('div');
+      el.className = 'panel';
+      el.style.padding = '12px';
+      el.innerHTML = `<div style="font-size:20px;">${bg.icon}</div><div style="font-weight:700;">${bg.name}</div><div class="small muted">${bg.desc}</div><div class="small" style="margin-top:6px;color:${earned ? '#9ec2a8' : '#8c9daf'};">${earned ? 'Earned' : 'Locked'}</div>`;
+      bGrid.appendChild(el);
+    });
+  } catch (_) {}
+}
 
-let _profFilter = '';
-let _allProfData = [];
+async function loadLeaderboard() {
+  const list = document.getElementById('leaderboard-list');
+  list.innerHTML = '';
+  try {
+    const data = await (await fetch(`${API}/api/gamification/leaderboard`)).json();
+    (data.leaderboard || []).forEach(e => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:1px solid #273344;';
+      row.innerHTML = `<div><div style="font-weight:700;">#${e.rank} ${e.name}</div><div class="small muted">${e.badge_count} badges</div></div><div style="font-weight:700;">${e.xp.toLocaleString()} XP</div>`;
+      list.appendChild(row);
+    });
+  } catch (_) {
+    list.innerHTML = '<div class="small" style="padding:8px;color:#ad7082;">Could not load leaderboard</div>';
+  }
+}
+
+function getVisibleClassesForCurrentFilters() {
+  const subject = document.getElementById('subject-select')?.value || '';
+  const major = document.getElementById('major-select')?.value || '';
+  const subjectTag = document.getElementById('subject-tag-filter')?.value || '';
+  const code = subject || major || subjectTag;
+  if (!code) return _allVisibleClasses;
+  return _allVisibleClasses.filter(c => (c.subject || '').toUpperCase() === code.toUpperCase());
+}
+
+function applyProfFilters(base) {
+  const q = (document.getElementById('prof-search').value || '').toLowerCase();
+  return (base || []).filter(p => {
+    if (_profFilter && p.rarity !== _profFilter) return false;
+    if (!q) return true;
+    return (p.name || '').toLowerCase().includes(q) || (p.department || '').toLowerCase().includes(q);
+  });
+}
 
 async function loadProfsPage() {
-  // Collect unique professor names from cached classes
   try {
-    const r = await fetch(`${API}/api/classes?size=200&term=${state.currentTerm || '202608'}`);
-    const data = await r.json();
-    const uniqueProfs = [...new Set(
-      (data.classes || [])
-        .map(c => c.professor)
-        .filter(p => p && p !== 'TBA')
-    )].slice(0, 60);
-
-    if (uniqueProfs.length === 0) {
-      document.getElementById('prof-grid').innerHTML =
-        '<div style="grid-column:1/-1;color:#A89FCC;padding:40px;text-align:center;">Load some classes first!</div>';
+    const term = state.currentTerm || '202608';
+    const all = [];
+    const maxPages = 12;
+    const size = 200;
+    for (let page = 1; page <= maxPages; page++) {
+      const data = await (await fetch(`${API}/api/classes?size=${size}&page=${page}&term=${term}`)).json();
+      const rows = data.classes || [];
+      all.push(...rows);
+      if (!rows.length || all.length >= (data.total || 0)) break;
+    }
+    _allVisibleClasses = all;
+    const relevant = getVisibleClassesForCurrentFilters();
+    const names = [...new Set(relevant.map(c => c.professor).filter(x => x && x !== 'TBA'))].slice(0, 200);
+    const grid = document.getElementById('prof-grid');
+    if (!names.length) {
+      grid.innerHTML = '<div class="panel" style="grid-column:1/-1;padding:18px;text-align:center;color:#9fb1c5;">No professors found for the selected major/subject.</div>';
       return;
     }
-
-    const grid = document.getElementById('prof-grid');
-    grid.innerHTML = renderSkeletons(Math.min(uniqueProfs.length, 12));
-
-    const batchR = await fetch(`${API}/api/profs/batch`, {
+    grid.innerHTML = renderSkeletons(Math.min(10, names.length));
+    const profData = await (await fetch(`${API}/api/profs/batch`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ names: uniqueProfs })
-    });
-    const profData = await batchR.json();
-    _allProfData = Object.values(profData);
-    renderProfGrid(_allProfData);
-    completeDailyChallenge('dc_prof');
-  } catch(e) {
+      body: JSON.stringify({ names }),
+    })).json();
+    _allProfData = Object.values(profData || {});
+    renderProfGrid(applyProfFilters(_allProfData));
+  } catch (e) {
     console.error('loadProfsPage', e);
-    document.getElementById('prof-grid').innerHTML =
-      '<div style="grid-column:1/-1;color:#FF2D7A;padding:40px;text-align:center;">Could not load professor data.</div>';
+    document.getElementById('prof-grid').innerHTML = '<div class="panel" style="grid-column:1/-1;padding:18px;text-align:center;color:#ad7082;">Could not load professor data.</div>';
   }
 }
 
 function renderProfGrid(profs) {
   const grid = document.getElementById('prof-grid');
   grid.innerHTML = '';
-  if (!profs || profs.length === 0) {
-    grid.innerHTML = '<div style="grid-column:1/-1;color:#A89FCC;padding:40px;text-align:center;">No professors found.</div>';
+  if (!profs || !profs.length) {
+    grid.innerHTML = '<div class="panel" style="grid-column:1/-1;padding:18px;text-align:center;color:#9fb1c5;">No professors match your filters.</div>';
     return;
   }
-  // Sort: Legendary first
   const order = { LEGENDARY:0, EPIC:1, RARE:2, UNCOMMON:3, COMMON:4, UNKNOWN:5 };
-  profs.sort((a, b) => (order[a.rarity||'UNKNOWN'] - order[b.rarity||'UNKNOWN']));
-
-  profs.forEach((p, idx) => {
-    const card = document.createElement('div');
-    card.className = `prof-card rarity-${p.rarity} animate-slide-in`;
-    card.style.animationDelay = (idx * 0.04) + 's';
-    if (p.rarity === 'LEGENDARY') card.classList.add('holo');
-
-    const color = RARITY_COLORS[p.rarity || 'UNKNOWN'];
-    const initials = p.name ? p.name.split(',').map(s => s.trim()[0]).join('').slice(0,2).toUpperCase() : '?';
+  profs.sort((a, b) => (order[a.rarity || 'UNKNOWN'] - order[b.rarity || 'UNKNOWN']) || (a.name || '').localeCompare(b.name || ''));
+  profs.forEach(p => {
+    const initials = p.name ? p.name.split(',').map(x => x.trim()[0]).join('').slice(0, 2).toUpperCase() : '?';
     const rating = p.avg_rating != null ? p.avg_rating.toFixed(1) : '—';
-    const diff   = p.avg_difficulty != null ? p.avg_difficulty.toFixed(1) : '—';
-    const wta    = p.would_take_again != null ? Math.round(p.would_take_again) + '%' : '—';
-
-    card.innerHTML = `
-      <div style="position:absolute;top:10px;right:10px;font-size:11px;font-weight:700;color:${color};background:${color}22;padding:2px 8px;border-radius:999px;">
-        ${RARITY_EMOJI[p.rarity||'UNKNOWN']} ${p.rarity||'UNKNOWN'}
-      </div>
-      <div class="prof-avatar" style="color:${color};border-color:${color};background:${color}22;">${initials}</div>
-      <div style="font-size:13px;font-weight:700;color:#E2D9FF;margin-bottom:4px;line-height:1.3;">${p.name || 'Unknown'}</div>
-      <div style="font-size:11px;color:#64748B;margin-bottom:12px;">${p.department || 'GSU'}</div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-        <div style="background:#1E1B40;border-radius:8px;padding:8px;text-align:center;">
-          <div style="font-size:20px;font-weight:900;color:${color};">${rating}</div>
-          <div style="font-size:9px;color:#64748B;">RATING</div>
-        </div>
-        <div style="background:#1E1B40;border-radius:8px;padding:8px;text-align:center;">
-          <div style="font-size:20px;font-weight:900;color:#FF6B35;">${diff}</div>
-          <div style="font-size:9px;color:#64748B;">DIFFICULTY</div>
+    const diff = p.avg_difficulty != null ? p.avg_difficulty.toFixed(1) : '—';
+    const wta = p.would_take_again != null ? Math.round(p.would_take_again) + '%' : '—';
+    const link = buildProfessorLink(p.name, p);
+    const el = document.createElement('div');
+    el.className = 'prof-card';
+    el.innerHTML = `
+      <div class="small" style="display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid var(--border);background:#243244;color:#b4c6db;">${p.rarity || 'UNKNOWN'}</div>
+      <div style="margin-top:10px;display:flex;align-items:center;gap:10px;">
+        <div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#2a3646;font-weight:700;">${initials}</div>
+        <div>
+          <div style="font-weight:700;">${p.name || 'Unknown'}</div>
+          <div class="small muted">${p.department || 'Georgia State University'}</div>
         </div>
       </div>
-
-      <div style="background:#1E1B40;border-radius:8px;padding:8px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <span style="font-size:10px;color:#64748B;">Would Take Again</span>
-        <span style="font-size:13px;font-weight:700;color:#00FF87;">${wta}</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+        <div class="panel" style="padding:8px;background:var(--surface-2);"><div class="small muted">Rating</div><div style="font-weight:700;">${rating}</div></div>
+        <div class="panel" style="padding:8px;background:var(--surface-2);"><div class="small muted">Difficulty</div><div style="font-weight:700;">${diff}</div></div>
       </div>
-      <div style="font-size:10px;color:#64748B;">${p.num_ratings || 0} ratings on RMP</div>
+      <div class="small muted" style="margin-top:8px;">Would take again: ${wta}</div>
+      <a href="${link}" target="_blank" rel="noopener" style="margin-top:8px;display:inline-block;color:var(--accent);text-decoration:none;font-size:12px;">Open RateMyProfessors</a>
     `;
-
-    card.onclick = () => {
-      checkBadge('prof_slayer', p.rarity === 'LEGENDARY');
-      completeDailyChallenge('dc_prof');
-      completeDailyChallenge('dc_legend', p.rarity === 'LEGENDARY');
-      addXP(10, `🎴 Prof Card: ${p.name}`);
-    };
-
-    grid.appendChild(card);
+    grid.appendChild(el);
   });
 }
 
-function searchProfs() {
-  const q = document.getElementById('prof-search').value.toLowerCase();
-  const filtered = _allProfData.filter(p =>
-    !q || (p.name || '').toLowerCase().includes(q) ||
-    (p.department || '').toLowerCase().includes(q)
-  );
-  const rarityFiltered = _profFilter ? filtered.filter(p => p.rarity === _profFilter) : filtered;
-  renderProfGrid(rarityFiltered);
-}
-
-function filterProfs(rarity) {
-  _profFilter = rarity;
-  searchProfs();
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  LEADERBOARD
-// ────────────────────────────────────────────────────────────────────────────
-
-async function loadLeaderboard() {
-  try {
-    const r = await fetch(`${API}/api/gamification/leaderboard`);
-    const data = await r.json();
-    const list = document.getElementById('leaderboard-list');
-    list.innerHTML = '';
-    (data.leaderboard || []).forEach((entry, i) => {
-      const medals = ['🥇','🥈','🥉'];
-      const medal = medals[i] || `#${entry.rank}`;
-      const isTop = i < 3;
-      const div = document.createElement('div');
-      div.style.cssText = `
-        display:flex;align-items:center;gap:16px;padding:16px 20px;
-        border-bottom:1px solid #1E1B40;
-        ${isTop ? 'background:linear-gradient(90deg,rgba(139,92,246,0.05),transparent);' : ''}
-      `;
-      div.innerHTML = `
-        <div style="font-size:24px;width:32px;text-align:center;">${medal}</div>
-        <div style="flex:1;">
-          <div style="font-weight:700;color:${isTop ? '#FFD700' : '#E2D9FF'};font-size:14px;">${entry.name}</div>
-          <div style="font-size:11px;color:#64748B;">${entry.badge_count} badges</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:16px;font-weight:900;color:#00FF87;">⚡ ${entry.xp.toLocaleString()}</div>
-          <div style="font-size:10px;color:#64748B;">XP</div>
-        </div>
-      `;
-      list.appendChild(div);
-    });
-  } catch(e) {
-    document.getElementById('leaderboard-list').innerHTML =
-      '<div style="padding:40px;text-align:center;color:#FF2D7A;">Could not load leaderboard</div>';
-  }
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  TOAST
-// ────────────────────────────────────────────────────────────────────────────
-
-function showToast(msg, type = 'success') {
-  const container = document.getElementById('toast-container');
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = msg;
-  container.appendChild(toast);
-  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(100%)';
-    toast.style.transition = 'all 0.3s';
-    setTimeout(() => toast.remove(), 300);
-  }, 3500);
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  PARTICLES
-// ────────────────────────────────────────────────────────────────────────────
-
-function initParticles() {
-  const canvas = document.getElementById('particle-canvas');
-  const ctx = canvas.getContext('2d');
-  let W = canvas.width = window.innerWidth;
-  let H = canvas.height = window.innerHeight;
-
-  window.addEventListener('resize', () => {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  });
-
-  const COLORS = ['#8B5CF6','#00C6FF','#00FF87','#FF6B35','#FFD700','#FF2D7A'];
-  const particles = Array.from({length: 60}, () => ({
-    x: Math.random() * W, y: Math.random() * H,
-    r: Math.random() * 2 + 0.5,
-    dx: (Math.random() - 0.5) * 0.4,
-    dy: (Math.random() - 0.5) * 0.4,
-    color: COLORS[Math.floor(Math.random() * COLORS.length)],
-    opacity: Math.random() * 0.6 + 0.1,
-  }));
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    particles.forEach(p => {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = p.color + Math.round(p.opacity * 255).toString(16).padStart(2,'0');
-      ctx.fill();
-
-      // Connections
-      particles.forEach(q => {
-        const dist = Math.hypot(p.x - q.x, p.y - q.y);
-        if (dist < 100) {
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(q.x, q.y);
-          ctx.strokeStyle = p.color + '18';
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
-        }
-      });
-
-      p.x += p.dx; p.y += p.dy;
-      if (p.x < 0 || p.x > W) p.dx *= -1;
-      if (p.y < 0 || p.y > H) p.dy *= -1;
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  HEALTH POLL (show scrape progress)
-// ────────────────────────────────────────────────────────────────────────────
+function searchProfs() { renderProfGrid(applyProfFilters(_allProfData)); }
+function filterProfs(r) { _profFilter = r; searchProfs(); }
 
 async function pollHealth() {
   try {
-    const r = await fetch(`${API}/api/health`);
-    const d = await r.json();
-    const banner = document.getElementById('scrape-banner');
+    const d = await (await fetch(`${API}/api/health`)).json();
+    document.getElementById('scrape-banner').style.display = d.scrape_in_progress ? 'block' : 'none';
     if (d.scrape_in_progress) {
-      banner.style.display = 'block';
       setTimeout(pollHealth, 5000);
-    } else {
-      banner.style.display = 'none';
-      if (d.last_scrape > 0) {
-        // Reload classes if scrape just finished
-        loadClasses(false);
-      }
+    } else if (d.last_scrape > 0) {
+      loadClasses(false);
     }
-  } catch(e) {
+  } catch (_) {
     setTimeout(pollHealth, 10000);
   }
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-//  INIT
-// ────────────────────────────────────────────────────────────────────────────
-
 document.addEventListener('DOMContentLoaded', () => {
+  hydrateFromBootstrap();
   loadState();
-  initParticles();
   loadTerms();
   pollHealth();
-
-  // Auto-save on visibility change
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) saveState();
-  });
-
-  // XP badge checks
-  checkBadge('xp_grinder', state.xp >= 500);
+  document.getElementById('major-select').addEventListener('change', loadProfsPage);
+  document.getElementById('subject-tag-filter').addEventListener('change', loadProfsPage);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) saveState(); });
 });
 </script>
 </body>

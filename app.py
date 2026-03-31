@@ -12,16 +12,17 @@ Routes:
 """
 
 import asyncio
+import json
 import logging
 import os
 import time
 from contextlib import asynccontextmanager, suppress
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from scraper import (
@@ -45,27 +46,116 @@ _scrape_lock = asyncio.Lock()
 _scrape_in_progress = False
 _last_scrape: float = 0.0
 _startup_scrape_task: Optional[asyncio.Task] = None
+_bootstrap_warm_task: Optional[asyncio.Task] = None
+_bootstrap_cache_lock = asyncio.Lock()
+_bootstrap_cache_payload: Optional[dict[str, Any]] = None
+_bootstrap_cache_ts: float = 0.0
+_bootstrap_cache_ttl_s = 120.0
+_bootstrap_page_size = 30
+
+
+def _make_classes_payload(term: str, classes: list[dict], page: int, size: int) -> dict[str, Any]:
+    total = len(classes)
+    start = (page - 1) * size
+    page_data = classes[start : start + size]
+
+    subj_counts: dict[str, int] = {}
+    rarity_counts: dict[str, int] = {}
+    for c in classes:
+        subj_counts[c["subject"]] = subj_counts.get(c["subject"], 0) + 1
+        rarity_counts[c["rarity"]] = rarity_counts.get(c["rarity"], 0) + 1
+
+    return {
+        "term": term,
+        "total": total,
+        "page": page,
+        "size": size,
+        "classes": page_data,
+        "subject_breakdown": subj_counts,
+        "rarity_breakdown": rarity_counts,
+        "scrape_in_progress": _scrape_in_progress,
+    }
+
+
+async def _build_bootstrap_payload(force_refresh: bool = False) -> dict[str, Any]:
+    global _bootstrap_cache_payload, _bootstrap_cache_ts
+    now = time.time()
+    if (
+        not force_refresh
+        and _bootstrap_cache_payload is not None
+        and (now - _bootstrap_cache_ts) < _bootstrap_cache_ttl_s
+    ):
+        return _bootstrap_cache_payload
+
+    async with _bootstrap_cache_lock:
+        now = time.time()
+        if (
+            not force_refresh
+            and _bootstrap_cache_payload is not None
+            and (now - _bootstrap_cache_ts) < _bootstrap_cache_ttl_s
+        ):
+            return _bootstrap_cache_payload
+
+        term = await get_best_term()
+        terms = await fetch_terms()
+        if not terms:
+            terms = [{"code": term, "description": term}]
+        selected_term = next((t for t in terms if t.get("code") == term), terms[0])
+        term = selected_term.get("code", term)
+        subjects = await fetch_subjects(term)
+
+        cached_classes = await get_cached_classes(term)
+        if not cached_classes and not _scrape_in_progress:
+            # Keep HTML response fast: trigger scrape in background if needed.
+            asyncio.create_task(_background_scrape(term=term))
+
+        enriched = [enrich_class(c) for c in cached_classes]
+        classes_payload = _make_classes_payload(term, enriched, page=1, size=_bootstrap_page_size)
+        payload = {
+            "term": term,
+            "terms": terms,
+            "subjects": subjects,
+            "classes_response": classes_payload,
+            "generated_at": now,
+        }
+        _bootstrap_cache_payload = payload
+        _bootstrap_cache_ts = now
+        return payload
+
+
+async def _refresh_bootstrap_payload():
+    try:
+        await _build_bootstrap_payload(force_refresh=True)
+    except Exception as exc:
+        logger.warning("Bootstrap payload refresh failed: %s", exc)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _startup_scrape_task
+    global _bootstrap_warm_task, _startup_scrape_task
     await init_db()
     # Kick off a background scrape on startup (non-blocking)
     _startup_scrape_task = asyncio.create_task(_background_scrape())
+    _bootstrap_warm_task = asyncio.create_task(_refresh_bootstrap_payload())
     try:
         yield
     finally:
-        if _startup_scrape_task:
-            if not _startup_scrape_task.done():
-                _startup_scrape_task.cancel()
+        for task, label in (
+            (_startup_scrape_task, "startup scrape"),
+            (_bootstrap_warm_task, "bootstrap warmup"),
+        ):
+            if not task:
+                continue
+            if not task.done():
+                task.cancel()
                 with suppress(asyncio.CancelledError):
-                    await _startup_scrape_task
-            elif not _startup_scrape_task.cancelled():
-                exc = _startup_scrape_task.exception()
+                    await task
+            elif not task.cancelled():
+                exc = task.exception()
                 if exc:
                     logger.error(
-                        "Startup scrape task failed: %s",
+                        "%s task failed: %s",
+                        label,
                         exc,
                         exc_info=(type(exc), exc, exc.__traceback__),
                     )
@@ -73,7 +163,7 @@ async def lifespan(app: FastAPI):
 
 
 async def _background_scrape(term: Optional[str] = None):
-    global _scrape_in_progress, _last_scrape
+    global _bootstrap_cache_ts, _scrape_in_progress, _last_scrape
     async with _scrape_lock:
         if _scrape_in_progress:
             return
@@ -82,6 +172,9 @@ async def _background_scrape(term: Optional[str] = None):
         logger.info("Starting background Banner scrape (term=%s) ...", term or "auto")
         await scrape_all_classes(term=term)
         _last_scrape = time.time()
+        # Force bootstrap data refresh after successful scrape.
+        _bootstrap_cache_ts = 0.0
+        asyncio.create_task(_refresh_bootstrap_payload())
         logger.info("Background scrape complete.")
     except asyncio.CancelledError:
         logger.info("Background scrape task cancelled.")
@@ -296,7 +389,7 @@ class BatchProfRequest(BaseModel):
 
 @app.post("/api/profs/batch")
 async def get_profs_batch(req: BatchProfRequest):
-    unique_names = list(set(n for n in req.names if n and n.strip()))[:30]
+    unique_names = list(dict.fromkeys(n.strip() for n in req.names if n and n.strip()))[:200]
     results = await batch_fetch_rmp(unique_names)
     enriched = {}
     for name, data in results.items():
@@ -349,7 +442,18 @@ async def get_leaderboard():
 async def serve_frontend():
     html_path = Path(__file__).parent / "index.html"
     if html_path.exists():
-        return FileResponse(str(html_path), media_type="text/html")
+        content = html_path.read_text(encoding="utf-8")
+        try:
+            payload = await _build_bootstrap_payload()
+            payload_json = json.dumps(payload, separators=(",", ":")).replace("</", "<\\/")
+            content = content.replace(
+                "window.__BOOTSTRAP_DATA__ = null;",
+                f"window.__BOOTSTRAP_DATA__ = {payload_json};",
+                1,
+            )
+        except Exception as exc:
+            logger.warning("Failed to embed bootstrap payload: %s", exc)
+        return HTMLResponse(content=content)
     raise HTTPException(status_code=404, detail="index.html not found")
 
 
